@@ -88,6 +88,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainErrorType.EMPTY_
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsResponsePayload
 import org.wordpress.android.fluxc.store.SiteStore.UserRolesError
 import org.wordpress.android.fluxc.store.SiteStore.UserRolesErrorType
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T.API
@@ -110,6 +111,7 @@ class SiteRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue?,
     private val appSecrets: AppSecrets,
     private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
+    private val coroutineEngine: CoroutineEngine,
     accessToken: AccessToken?,
     userAgent: UserAgent?
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -673,34 +675,58 @@ class SiteRestClient @Inject constructor(
     }
 
     // Unauthenticated network calls
-    @Suppress("SwallowedException")
     fun fetchConnectSiteInfo(siteUrl: String) {
+        coroutineEngine.launch(AppLog.T.API, this, "fetchConnectSiteInfo") {
+            fetchConnectSiteInfoSync(siteUrl).let { payload ->
+                mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(payload))
+            }
+        }
+    }
+
+    @Suppress("SwallowedException")
+    suspend fun fetchConnectSiteInfoSync(siteUrl: String): ConnectSiteInfoPayload {
+        fun ConnectSiteInfoResponse.toConnectSiteInfoPayload(url: String): ConnectSiteInfoPayload {
+            return ConnectSiteInfoPayload(
+                url,
+                exists,
+                isWordPress,
+                hasJetpack,
+                isJetpackActive,
+                isJetpackConnected,
+                isWordPressDotCom, // CHECKSTYLE IGNORE
+                urlAfterRedirects
+            )
+        }
+
         // Get a proper URI to reliably retrieve the scheme.
         val uri: URI = try {
             URI.create(UrlUtils.addUrlSchemeIfNeeded(siteUrl, false))
         } catch (e: IllegalArgumentException) {
             val siteError = SiteError(INVALID_SITE)
-            val payload = ConnectSiteInfoPayload(siteUrl, siteError)
-            mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(payload))
-            return
+            return ConnectSiteInfoPayload(siteUrl, siteError)
         }
+
         val params = mutableMapOf<String, String>()
         params["url"] = uri.toString()
 
         // Make the call.
         val url = WPCOMREST.connect.site_info.urlV1_1
-        val request = WPComGsonRequest.buildGetRequest(url, params,
-                ConnectSiteInfoResponse::class.java,
-                { response ->
-                    val info = connectSiteInfoFromResponse(siteUrl, response)
-                    mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(info))
-                }
-        ) {
-            val siteError = SiteError(INVALID_SITE)
-            val info = ConnectSiteInfoPayload(siteUrl, siteError)
-            mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(info))
+        val response = wpComGsonRequestBuilder.syncGetRequest(
+            restClient = this,
+            url = url,
+            params = params,
+            clazz = ConnectSiteInfoResponse::class.java
+        )
+
+        return when (response) {
+            is Error -> {
+                val siteError = SiteError(INVALID_SITE)
+                ConnectSiteInfoPayload(siteUrl, siteError)
+            }
+            is Success -> {
+                response.data.toConnectSiteInfoPayload(siteUrl)
+            }
         }
-        addUnauthedRequest(request)
     }
 
     @Suppress("SwallowedException")
@@ -1227,19 +1253,6 @@ class SiteRestClient @Inject constructor(
             }
         }
         return payload
-    }
-
-    private fun connectSiteInfoFromResponse(url: String, response: ConnectSiteInfoResponse): ConnectSiteInfoPayload {
-        return ConnectSiteInfoPayload(
-                url,
-                response.exists,
-                response.isWordPress,
-                response.hasJetpack,
-                response.isJetpackActive,
-                response.isJetpackConnected,
-                response.isWordPressDotCom, // CHECKSTYLE IGNORE
-                response.urlAfterRedirects
-        )
     }
 
     private fun responseToDomainAvailabilityPayload(
