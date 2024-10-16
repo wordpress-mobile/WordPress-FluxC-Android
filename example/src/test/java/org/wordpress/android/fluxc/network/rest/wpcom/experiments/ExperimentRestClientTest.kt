@@ -176,7 +176,8 @@ class ExperimentRestClientTest {
                         eq(false),
                         any(),
                         eq(true),
-                        customGsonBuilder = anyOrNull()
+                        customGsonBuilder = anyOrNull(),
+                        authenticatedRequest = any()
                 )
         ).thenReturn(response)
     }

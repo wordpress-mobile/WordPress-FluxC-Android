@@ -591,7 +591,8 @@ class ActivityLogRestClientTest {
                 eq(false),
                 any(),
                 eq(false),
-                customGsonBuilder = anyOrNull()
+                customGsonBuilder = anyOrNull(),
+                authenticatedRequest = any()
         )
         ).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
@@ -612,7 +613,8 @@ class ActivityLogRestClientTest {
                 eq(false),
                 any(),
                 eq(false),
-                customGsonBuilder = anyOrNull()
+                customGsonBuilder = anyOrNull(),
+                authenticatedRequest = any()
         )).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
         return response
@@ -698,7 +700,8 @@ class ActivityLogRestClientTest {
                 eq(false),
                 any(),
                 eq(false),
-                customGsonBuilder = anyOrNull()
+                customGsonBuilder = anyOrNull(),
+                authenticatedRequest = any()
         )).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
         return response
@@ -717,7 +720,8 @@ class ActivityLogRestClientTest {
                 eq(false),
                 any(),
                 eq(false),
-                customGsonBuilder = anyOrNull()
+                customGsonBuilder = anyOrNull(),
+                authenticatedRequest = any()
         )
         ).thenReturn(response)
         return response

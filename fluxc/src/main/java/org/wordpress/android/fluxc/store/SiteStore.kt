@@ -402,8 +402,7 @@ open class SiteStore @Inject constructor(
         }
     }
 
-    data class ConnectSiteInfoPayload
-    @JvmOverloads constructor(
+    data class ConnectSiteInfoPayload @JvmOverloads constructor(
         @JvmField val url: String,
         @JvmField val exists: Boolean = false,
         @JvmField val isWordPress: Boolean = false,
@@ -897,7 +896,14 @@ open class SiteStore @Inject constructor(
     )
 
     enum class SiteErrorType {
-        INVALID_SITE, UNKNOWN_SITE, DUPLICATE_SITE, INVALID_RESPONSE, UNAUTHORIZED, NOT_AUTHENTICATED, GENERIC_ERROR
+        INVALID_SITE,
+        UNKNOWN_SITE,
+        DUPLICATE_SITE,
+        INVALID_RESPONSE,
+        UNAUTHORIZED,
+        NOT_AUTHENTICATED,
+        GENERIC_ERROR,
+        WPCOM_SITE_SUSPENDED
     }
 
     enum class AllDomainsErrorType {
@@ -1859,6 +1865,12 @@ open class SiteStore @Inject constructor(
 
     private fun fetchConnectSiteInfo(payload: String) {
         siteRestClient.fetchConnectSiteInfo(payload)
+    }
+
+    suspend fun fetchConnectSiteInfoSync(siteUrl: String): ConnectSiteInfoPayload {
+        return coroutineEngine.withDefaultContext(T.API, this, "Fetch Connect Site Info") {
+            siteRestClient.fetchConnectSiteInfoSync(siteUrl)
+        }
     }
 
     private fun handleFetchedConnectSiteInfo(payload: ConnectSiteInfoPayload) {

@@ -212,7 +212,8 @@ class BloggingPromptsRestClientTest {
                 eq(BloggingPromptsListResponseTypeToken.type),
                 eq(false),
                 any(),
-                eq(false)
+                eq(false),
+                authenticatedRequest = any()
             )
         ).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
