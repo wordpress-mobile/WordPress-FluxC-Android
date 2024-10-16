@@ -2056,7 +2056,7 @@ open class WellSqlConfig : DefaultWellConfig {
 
                 204 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
                     // Drop the column METADATA from WCProductModel
-                    // Since SQLite version varies accross devices, we can't rely on the support of DROP COLUMN,
+                    // Since SQLite version varies across devices, we can't rely on the support of DROP COLUMN,
                     // So we'll use an intermediate table
                     db.execSQL("""
                         CREATE TABLE WCProductModel_temp (
