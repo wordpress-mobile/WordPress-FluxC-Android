@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
@@ -19,6 +20,9 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.model.metadata.MetadataChanges
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
@@ -935,16 +939,22 @@ class ProductRestClient @Inject constructor(
      * @param [site] The site to fetch product reviews for
      * @param [storedWCProductModel] the stored model to compare with the [updatedProductModel]
      * @param [updatedProductModel] the product model that contains the update
+     * @param [metadataChanges] the metadata changes to be updated
      */
     fun updateProduct(
         site: SiteModel,
         storedWCProductModel: WCProductModel?,
-        updatedProductModel: WCProductModel
+        updatedProductModel: WCProductModel,
+        metadataChanges: MetadataChanges? = null
     ) {
         coroutineEngine.launch(AppLog.T.API, this, "updateProduct") {
             val remoteProductId = updatedProductModel.remoteProductId
             val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-            val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
+            val body = productModelToProductJsonBody(
+                productModel = storedWCProductModel,
+                updatedProductModel = updatedProductModel,
+                metadata = metadataChanges?.toJsonArray()
+            )
 
             val response = wooNetwork.executePutGsonRequest(
                 site = site,
@@ -1710,14 +1720,29 @@ class ProductRestClient @Inject constructor(
      *
      * @param [site] The site to fetch product reviews for
      * @param [productModel] the new product model
+     * @param [metaData] the metadata to be added to the product
      */
     fun addProduct(
         site: SiteModel,
-        productModel: WCProductModel
+        productModel: WCProductModel,
+        metaData: Map<String, WCMetaDataValue>? = null
     ) {
         coroutineEngine.launch(AppLog.T.API, this, "addProduct") {
             val url = WOOCOMMERCE.products.pathV3
-            val body = productModelToProductJsonBody(null, productModel)
+            val body = productModelToProductJsonBody(
+                productModel = null,
+                updatedProductModel = productModel,
+                metadata = metaData?.let {
+                    JsonArray().apply {
+                        it.forEach { (key, value) ->
+                            add(JsonObject().apply {
+                                addProperty(WCMetaData.KEY, key)
+                                add(WCMetaData.VALUE, value.jsonValue)
+                            })
+                        }
+                    }
+                }
+            )
 
             val response = wooNetwork.executePostGsonRequest(
                 site = site,
@@ -1805,7 +1830,8 @@ class ProductRestClient @Inject constructor(
     @Suppress("LongMethod", "ComplexMethod", "SwallowedException", "TooGenericExceptionCaught")
     private fun productModelToProductJsonBody(
         productModel: WCProductModel?,
-        updatedProductModel: WCProductModel
+        updatedProductModel: WCProductModel,
+        metadata: JsonArray? = null
     ): HashMap<String, Any> {
         val body = HashMap<String, Any>()
 
@@ -1989,15 +2015,8 @@ class ProductRestClient @Inject constructor(
                 }
             }
         }
-        if (storedWCProductModel.metadata != updatedProductModel.metadata) {
-            JsonParser().apply {
-                body["meta_data"] = try {
-                    parse(updatedProductModel.metadata).asJsonArray
-                } catch (ex: Exception) {
-                    AppLog.e(AppLog.T.API, "Error parsing product metadata", ex)
-                    JsonArray()
-                }
-            }
+        if (metadata != null) {
+            body["meta_data"] = metadata
         }
         if (storedWCProductModel.password != updatedProductModel.password) {
             body["post_password"] = updatedProductModel.password.orEmpty()

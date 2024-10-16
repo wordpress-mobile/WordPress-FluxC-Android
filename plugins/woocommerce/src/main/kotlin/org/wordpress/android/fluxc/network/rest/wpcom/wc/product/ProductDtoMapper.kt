@@ -1,16 +1,14 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
-import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.StripProductMetaData
-import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.network.utils.getString
 import javax.inject.Inject
 
 class ProductDtoMapper @Inject constructor(
-    private val gson: Gson,
     private val stripProductMetaData: StripProductMetaData
 ) {
     @Suppress("LongMethod", "ComplexMethod")
@@ -108,10 +106,6 @@ class ProductDtoMapper @Inject constructor(
             combineVariationQuantities = dto.combine_variations?.let {
                 it == "yes"
             } ?: false
-
-            // Save only the subscription data, the rest of the metadata will be saved separately
-            metadata = metaData.filter { it.key in WCProductModel.SubscriptionMetadataKeys.ALL_KEYS }
-                .let { gson.toJson(it) }
 
             password = dto.password
 

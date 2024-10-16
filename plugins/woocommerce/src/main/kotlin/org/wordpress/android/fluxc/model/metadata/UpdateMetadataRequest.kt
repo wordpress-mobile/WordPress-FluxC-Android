@@ -3,15 +3,26 @@ package org.wordpress.android.fluxc.model.metadata
 data class UpdateMetadataRequest(
     val parentItemId: Long,
     val parentItemType: MetaDataParentItemType,
-    val insertedMetadata: List<WCMetaData> = emptyList(),
-    val updatedMetadata: List<WCMetaData> = emptyList(),
-    val deletedMetadataIds: List<Long> = emptyList(),
+    val metadataChanges: MetadataChanges,
 ) {
-    init {
-        // The ID of inserted metadata is ignored, so to ensure that there is no data loss here,
-        // we require that all inserted metadata have an ID of 0.
-        require(insertedMetadata.all { it.id == 0L }) {
-            "Inserted metadata must have an ID of 0"
-        }
-    }
+    val insertedMetadata: List<WCMetaData> get() = metadataChanges.insertedMetadata
+    val updatedMetadata: List<WCMetaData> get() = metadataChanges.updatedMetadata
+    val deletedMetadataIds: List<Long> get() = metadataChanges.deletedMetadataIds
+
+    constructor(
+        parentItemId: Long,
+        parentItemType: MetaDataParentItemType,
+        insertedMetadata: List<WCMetaData> = emptyList(),
+        updatedMetadata: List<WCMetaData> = emptyList(),
+        deletedMetadataIds: List<Long> = emptyList(),
+    ) : this(
+        parentItemId,
+        parentItemType,
+        MetadataChanges(
+            insertedMetadata,
+            updatedMetadata,
+            deletedMetadataIds,
+        )
+    )
 }
+

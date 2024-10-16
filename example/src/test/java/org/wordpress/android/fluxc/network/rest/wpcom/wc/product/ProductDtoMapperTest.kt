@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
-import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -8,17 +7,16 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
-import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemotePriceType.FlatFee
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteRestrictionsType.AnyText
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteType.Checkbox
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.metadata.get
 import kotlin.test.fail
 
 class ProductDtoMapperTest {
     private val productDtoMapper = ProductDtoMapper(
-        gson = Gson(),
         stripProductMetaData = mock {
             on { invoke(any()) } doAnswer {
                 @Suppress("UNCHECKED_CAST")
@@ -77,18 +75,6 @@ class ProductDtoMapperTest {
 
         assertThat(addonOptions).isNotNull
         assertThat(addonOptions).isNotEmpty
-    }
-
-    @Test
-    fun `Product metadata is serialized correctly`() {
-        val productModelUnderTest =
-            "wc/product-with-addons.json"
-                .jsonFileAs(ProductApiResponse::class.java)
-                ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
-                ?.product
-
-        assertThat(productModelUnderTest).isNotNull
-        assertThat(productModelUnderTest?.metadata).isNotNull
     }
 
     @Test

@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.metadata
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -47,32 +45,11 @@ internal class MetaDataRestClient @Inject internal constructor(
             MetaDataParentItemType.PRODUCT -> WOOCOMMERCE.products.id(request.parentItemId).pathV3
         }
 
-        val metaDataJson = JsonArray()
-        request.insertedMetadata.forEach {
-            metaDataJson.add(
-                JsonObject().apply {
-                    addProperty(WCMetaData.KEY, it.key)
-                    add(WCMetaData.VALUE, it.value.jsonValue)
-                }
-            )
-        }
-        request.updatedMetadata.forEach {
-            metaDataJson.add(it.toJson())
-        }
-        request.deletedMetadataIds.forEach {
-            metaDataJson.add(
-                JsonObject().apply {
-                    addProperty(WCMetaData.ID, it)
-                    add(WCMetaData.VALUE, JsonNull.INSTANCE)
-                }
-            )
-        }
-
         val response = wooNetwork.executePostGsonRequest(
             site = site,
             path = path,
             body = mapOf(
-                "meta_data" to metaDataJson,
+                "meta_data" to request.metadataChanges.toJsonArray(),
                 "_fields" to "meta_data"
             ),
             clazz = JsonObject::class.java
