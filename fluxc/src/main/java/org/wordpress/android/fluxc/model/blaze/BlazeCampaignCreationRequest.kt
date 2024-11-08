@@ -12,6 +12,7 @@ data class BlazeCampaignCreationRequest(
     val paymentMethodId: String,
     val tagLine: String,
     val description: String,
+    val ctaText: String,
     val startDate: Date,
     val endDate: Date,
     val budget: BlazeCampaignCreationRequestBudget,
