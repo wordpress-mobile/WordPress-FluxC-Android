@@ -366,11 +366,14 @@ private class BlazeAdSuggestionListResponse(
         val siteName: String,
         @SerializedName("text_snippet")
         val textSnippet: String,
+        @SerializedName("cta_text")
+        val ctaText: String,
     ) {
         fun toDomainModel(): BlazeAdSuggestion {
             return BlazeAdSuggestion(
                 tagLine = siteName,
-                description = textSnippet
+                description = textSnippet,
+                ctaText = ctaText
             )
         }
     }
