@@ -402,7 +402,8 @@ class BlazeCampaignsStoreTest {
         val suggestions = List(10) {
             BlazeAdSuggestion(
                 tagLine = it.toString(),
-                description = "Ad $it"
+                description = "Ad $it",
+                ctaText = "CTA $it"
             )
         }
 
