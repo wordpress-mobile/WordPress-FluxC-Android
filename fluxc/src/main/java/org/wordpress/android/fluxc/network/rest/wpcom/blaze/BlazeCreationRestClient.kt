@@ -234,6 +234,7 @@ class BlazeCreationRestClient @Inject constructor(
             ),
             "site_name" to request.tagLine,
             "text_snippet" to request.description,
+            "cta_text" to request.ctaText,
             "target_url" to request.targetUrl,
             "url_params" to request.urlParams.entries.joinToString(separator = "&") { "${it.key}=${it.value}" },
             "main_image" to JsonObject().apply {
@@ -366,11 +367,14 @@ private class BlazeAdSuggestionListResponse(
         val siteName: String,
         @SerializedName("text_snippet")
         val textSnippet: String,
+        @SerializedName("cta_text")
+        val ctaText: String,
     ) {
         fun toDomainModel(): BlazeAdSuggestion {
             return BlazeAdSuggestion(
                 tagLine = siteName,
-                description = textSnippet
+                description = textSnippet,
+                ctaText = ctaText
             )
         }
     }
