@@ -216,7 +216,7 @@ abstract class BaseWPV2MediaRestClient constructor(
             params["offset"] = offset.toString()
         }
         if (mimeType != null) {
-            params["mime_type"] = mimeType.value
+            params["media_type"] = mimeType.value
         }
         val response = executeGetGsonRequest(
             site,
