@@ -12,11 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
 import org.wordpress.android.fluxc.Dispatcher
@@ -29,11 +25,7 @@ import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState.FAILED
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
-import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListResponsePayload
-import org.wordpress.android.fluxc.store.MediaStore.MediaError
-import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload
-import org.wordpress.android.fluxc.store.MediaStore.ProgressPayload
+import org.wordpress.android.fluxc.store.MediaStore.*
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.MimeType
 import org.wordpress.android.util.AppLog
@@ -154,6 +146,7 @@ abstract class BaseWPV2MediaRestClient constructor(
                         try {
                             val res = gson.fromJson(response.body!!.string(), MediaWPRESTResponse::class.java)
                             val uploadedMedia = res.toMediaModel(site.id)
+                            uploadedMedia.id = media.id
                             val payload = ProgressPayload(uploadedMedia, 1f, true, false)
                             try {
                                 trySendBlocking(payload)

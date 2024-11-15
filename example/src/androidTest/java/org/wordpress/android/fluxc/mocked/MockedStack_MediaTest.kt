@@ -42,6 +42,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
             val site = SiteModel()
             site.id = 5
             site.setIsWPCom(true)
+            site.origin = SiteModel.ORIGIN_WPCOM_REST
             site.siteId = 6426253
             return site
         }

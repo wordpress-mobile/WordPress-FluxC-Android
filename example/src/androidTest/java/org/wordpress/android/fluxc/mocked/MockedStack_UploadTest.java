@@ -544,6 +544,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     private SiteModel getTestSite() {
         SiteModel site = new SiteModel();
         site.setIsWPCom(true);
+        site.setOrigin(SiteModel.ORIGIN_WPCOM_REST);
         site.setSiteId(6426253);
         return site;
     }
