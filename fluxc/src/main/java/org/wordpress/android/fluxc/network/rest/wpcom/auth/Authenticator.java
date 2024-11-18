@@ -5,6 +5,15 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.android.volley.Cache;
+import com.android.volley.NetworkResponse;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,15 +44,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import com.android.volley.Cache;
-import com.android.volley.NetworkResponse;
-import com.android.volley.ParseError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
 
 public class Authenticator {
     private static final String WPCOM_OAUTH_PREFIX = "https://public-api.wordpress.com/oauth2";
@@ -327,7 +327,7 @@ public class Authenticator {
             params.put("signup_flow_name", payload.signupFlowName);
         }
 
-        if(payload.isSignup) {
+        if (payload.isSignup) {
             params.put("create_account", true);
         }
 
@@ -350,7 +350,7 @@ public class Authenticator {
                         mDispatcher.dispatch(AuthenticationActionBuilder.newSentAuthEmailAction(responsePayload));
                     }
                 }
-        );
+                                                                    );
         request.addQueryParameter("locale", LanguageUtils.getPatchedCurrentDeviceLanguage(mAppContext));
 
         mRequestQueue.add(request);
