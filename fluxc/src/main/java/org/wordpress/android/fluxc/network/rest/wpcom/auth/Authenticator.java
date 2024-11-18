@@ -5,15 +5,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
-import com.android.volley.Cache;
-import com.android.volley.NetworkResponse;
-import com.android.volley.ParseError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +35,15 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import com.android.volley.Cache;
+import com.android.volley.NetworkResponse;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
 
 public class Authenticator {
     private static final String WPCOM_OAUTH_PREFIX = "https://public-api.wordpress.com/oauth2";
@@ -90,7 +90,8 @@ public class Authenticator {
         }
     }
 
-    @Inject public Authenticator(Context appContext,
+    @Inject
+    public Authenticator(Context appContext,
                          Dispatcher dispatcher,
                          @Named("regular") RequestQueue requestQueue,
                          AppSecrets secrets) {
@@ -248,7 +249,8 @@ public class Authenticator {
         }
     }
 
-    public interface OauthResponse {}
+    public interface OauthResponse {
+    }
 
     public static class Token implements OauthResponse {
         private String mAccessToken;
@@ -300,8 +302,7 @@ public class Authenticator {
     }
 
     public void sendAuthEmail(final AuthEmailPayload payload) {
-        String url = payload.isSignup ? WPCOMREST.auth.send_signup_email.getUrlV1_1()
-                : WPCOMREST.auth.send_login_email.getUrlV1_3();
+        String url = WPCOMREST.auth.send_login_email.getUrlV1_3();
 
         Map<String, Object> params = new HashMap<>();
         params.put("email", payload.emailOrUsername);
@@ -324,6 +325,10 @@ public class Authenticator {
 
         if (payload.signupFlowName != null && !TextUtils.isEmpty(payload.signupFlowName)) {
             params.put("signup_flow_name", payload.signupFlowName);
+        }
+
+        if(payload.isSignup) {
+            params.put("create_account", true);
         }
 
         WPComGsonRequest request = WPComGsonRequest.buildPostRequest(url, params, AuthEmailWPComRestResponse.class,
