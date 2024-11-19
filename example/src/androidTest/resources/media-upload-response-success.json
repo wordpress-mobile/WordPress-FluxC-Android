@@ -1,50 +1,199 @@
 {
-  "media":[
-    {
-      "ID":9999,
-      "URL":"https://place.com/photo.jpg",
-      "guid":"http:\/\/place.com\/photo.jpg",
-      "date":"2017-08-11T12:17:49+00:00",
-      "post_ID":0,
-      "author_ID":12345,
-      "file":"photo.jpg",
-      "mime_type":"image\/jpeg",
-      "extension":"jpg",
-      "title":"",
-      "caption":"Test Caption",
-      "description":"",
-      "alt":"",
-      "icon":"",
-      "thumbnails":{
-        "thumbnail":"https:\/\/place.com\/photo.jpg?w=150",
-        "medium":"https:\/\/place.com\/photo.jpg?w=300",
-        "large":"https:\/\/place.com\/photo.jpg?w=880"
+  "id": 9999,
+  "date": "2024-10-21T17:49:43",
+  "date_gmt": "2024-10-21T16:49:43",
+  "guid": {
+    "rendered": "https://place.com/wp-content/uploads/2024/10/img_0111.jpeg"
+  },
+  "modified": "2024-10-21T17:49:45",
+  "modified_gmt": "2024-10-21T16:49:45",
+  "slug": "img_0111",
+  "status": "inherit",
+  "type": "attachment",
+  "link": "https://place.com/?attachment_id=576",
+  "title": {
+    "rendered": "img_0111"
+  },
+  "author": 190912935,
+  "featured_media": 0,
+  "comment_status": "open",
+  "ping_status": "closed",
+  "template": "",
+  "meta": {
+    "_acf_changed": false,
+    "advanced_seo_description": "",
+    "jetpack_seo_html_title": "",
+    "jetpack_seo_noindex": false,
+    "jetpack_post_was_ever_published": false
+  },
+  "class_list": [
+    "post-576",
+    "attachment",
+    "type-attachment",
+    "status-inherit",
+    "hentry"
+  ],
+  "acf": [],
+  "jetpack_sharing_enabled": true,
+  "jetpack_likes_enabled": true,
+  "jetpack_shortlink": "https://wp.me/afje44-9i",
+  "description": {
+    "rendered": "<p class=\"attachment\"><a href='https://place.com/wp-content/uploads/2024/10/img_0111.jpeg'><img loading=\"lazy\" decoding=\"async\" width=\"300\" height=\"225\" src=\"https://place.com/wp-content/uploads/2024/10/img_0111-300x225.jpeg\" class=\"attachment-medium size-medium\" alt=\"\" srcset=\"https://place.com/wp-content/uploads/2024/10/img_0111-300x225.jpeg 300w, https://place.com/wp-content/uploads/2024/10/img_0111-1024x768.jpeg 1024w, https://place.com/wp-content/uploads/2024/10/img_0111-768x576.jpeg 768w, https://place.com/wp-content/uploads/2024/10/img_0111-1536x1152.jpeg 1536w, https://place.com/wp-content/uploads/2024/10/img_0111-2048x1536.jpeg 2048w, https://place.com/wp-content/uploads/2024/10/img_0111-1320x990.jpeg 1320w, https://place.com/wp-content/uploads/2024/10/img_0111-600x450.jpeg?crop=1 600w\" sizes=\"auto, (max-width: 300px) 100vw, 300px\" data-attachment-id=\"576\" data-permalink=\"https://place.com/?attachment_id=576\" data-orig-file=\"https://place.com/wp-content/uploads/2024/10/img_0111.jpeg\" data-orig-size=\"3000,2250\" data-comments-opened=\"1\" data-image-meta=\"{&quot;aperture&quot;:&quot;2.4&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;iPhone X&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;1522412059&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;6&quot;,&quot;iso&quot;:&quot;16&quot;,&quot;shutter_speed&quot;:&quot;0.0047846889952153&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;1&quot;}\" data-image-title=\"img_0111\" data-image-description=\"\" data-image-caption=\"\" data-medium-file=\"https://place.com/wp-content/uploads/2024/10/img_0111-300x225.jpeg\" data-large-file=\"https://place.com/wp-content/uploads/2024/10/img_0111-1024x768.jpeg\" /></a></p>\n"
+  },
+  "caption": {
+    "rendered": ""
+  },
+  "alt_text": "",
+  "media_type": "image",
+  "mime_type": "image/jpeg",
+  "media_details": {
+    "width": 3000,
+    "height": 2250,
+    "file": "2024/10/img_0111.jpeg",
+    "filesize": 2926027,
+    "sizes": {
+      "medium": {
+        "file": "img_0111-300x225.jpeg",
+        "width": 300,
+        "height": 225,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-300x225.jpeg"
       },
-      "height":585,
-      "width":880,
-      "exif":{
-        "aperture":"0",
-        "credit":"",
-        "camera":"",
-        "caption":"",
-        "created_timestamp":"0",
-        "copyright":"",
-        "focal_length":"0",
-        "iso":"0",
-        "shutter_speed":"0",
-        "title":"",
-        "orientation":"0",
-        "keywords":[
-
-        ]
+      "large": {
+        "file": "img_0111-1024x768.jpeg",
+        "width": 1024,
+        "height": 768,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-1024x768.jpeg"
       },
-      "meta":{
-        "links":{
-          "self":"",
-          "help":"",
-          "site":""
+      "thumbnail": {
+        "file": "img_0111-150x150.jpeg",
+        "width": 150,
+        "height": 150,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-150x150.jpeg?crop=1"
+      },
+      "medium_large": {
+        "file": "img_0111-768x576.jpeg",
+        "width": 768,
+        "height": 576,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-768x576.jpeg"
+      },
+      "1536x1536": {
+        "file": "img_0111-1536x1152.jpeg",
+        "width": 1536,
+        "height": 1152,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-1536x1152.jpeg"
+      },
+      "2048x2048": {
+        "file": "img_0111-2048x1536.jpeg",
+        "width": 2048,
+        "height": 1536,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-2048x1536.jpeg"
+      },
+      "mailpoet_newsletter_max": {
+        "file": "img_0111-1320x990.jpeg",
+        "width": 1320,
+        "height": 990,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-1320x990.jpeg"
+      },
+      "woocommerce_thumbnail": {
+        "file": "img_0111-450x450.jpeg",
+        "width": 450,
+        "height": 450,
+        "virtual": true,
+        "uncropped": false,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-450x450.jpeg?crop=1"
+      },
+      "woocommerce_single": {
+        "file": "img_0111-600x450.jpeg",
+        "width": 600,
+        "height": 450,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-600x450.jpeg?crop=1"
+      },
+      "woocommerce_gallery_thumbnail": {
+        "file": "img_0111-100x100.jpeg",
+        "width": 100,
+        "height": 100,
+        "virtual": true,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111-100x100.jpeg?crop=1"
+      },
+      "full": {
+        "file": "img_0111.jpeg",
+        "width": 3000,
+        "height": 2250,
+        "mime_type": "image/jpeg",
+        "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111.jpeg"
+      }
+    },
+    "image_meta": {
+      "aperture": "2.4",
+      "credit": "",
+      "camera": "iPhone X",
+      "caption": "",
+      "created_timestamp": "1522412059",
+      "copyright": "",
+      "focal_length": "6",
+      "iso": "16",
+      "shutter_speed": "0.0047846889952153",
+      "title": "",
+      "orientation": "1",
+      "keywords": []
+    }
+  },
+  "post": 74,
+  "source_url": "https://place.com/wp-content/uploads/2024/10/img_0111.jpeg",
+  "_links": {
+    "self": [
+      {
+        "href": "https://place.com/wp-json/wp/v2/media/576",
+        "targetHints": {
+          "allow": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
         }
       }
-    }
-  ]
+    ],
+    "collection": [
+      {
+        "href": "https://place.com/wp-json/wp/v2/media"
+      }
+    ],
+    "about": [
+      {
+        "href": "https://place.com/wp-json/wp/v2/types/attachment"
+      }
+    ],
+    "author": [
+      {
+        "embeddable": true,
+        "href": "https://place.com/wp-json/wp/v2/users/190912935"
+      }
+    ],
+    "replies": [
+      {
+        "embeddable": true,
+        "href": "https://place.com/wp-json/wp/v2/comments?post=576"
+      }
+    ]
+  }
 }

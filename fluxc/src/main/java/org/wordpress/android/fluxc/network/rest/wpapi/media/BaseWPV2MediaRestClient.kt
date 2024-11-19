@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpapi.media
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ProducerScope
@@ -107,25 +106,15 @@ abstract class BaseWPV2MediaRestClient constructor(
         fun ProducerScope<ProgressPayload>.handleFailure(media: MediaModel, error: MediaError) {
             media.setUploadState(FAILED)
             val payload = ProgressPayload(media, 1f, false, error)
-            try {
-                trySendBlocking(payload)
-                close()
-            } catch (e: CancellationException) {
-                // Do nothing (the flow has been cancelled)
-            }
+            trySendBlocking(payload)
+            close()
         }
 
         return callbackFlow {
             val url = WPAPI.media.getFullUrl(site)
             val body = WPRestUploadRequestBody(media) { media, progress ->
-                if (!isClosedForSend) {
-                    val payload = ProgressPayload(media, progress, false, null)
-                    try {
-                        trySend(payload).isSuccess
-                    } catch (e: CancellationException) {
-                        // Do nothing (the flow has been cancelled)
-                    }
-                }
+                val payload = ProgressPayload(media, progress, false, null)
+                trySend(payload)
             }
 
             val request = Request.Builder()
@@ -138,29 +127,22 @@ abstract class BaseWPV2MediaRestClient constructor(
 
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    // If the upload has been canceled, then ignore errors
-                    if (!isClosedForSend) {
-                        val message = "media upload failed: $e"
-                        AppLog.w(MEDIA, message)
-                        val error = MediaError.fromIOException(e)
-                        error.logMessage = message
-                        handleFailure(media, error)
-                    }
+                    val message = "media upload failed: $e"
+                    AppLog.w(MEDIA, message)
+                    val error = MediaError.fromIOException(e)
+                    error.logMessage = message
+                    handleFailure(media, error)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    if (isClosedForSend) return
                     if (response.isSuccessful) {
                         try {
                             val res = gson.fromJson(response.body!!.string(), MediaWPRESTResponse::class.java)
                             val uploadedMedia = res.toMediaModel(site.id)
+                            uploadedMedia.id = media.id
                             val payload = ProgressPayload(uploadedMedia, 1f, true, false)
-                            try {
-                                trySendBlocking(payload)
-                                close()
-                            } catch (e: CancellationException) {
-                                // Do nothing (the flow has been cancelled)
-                            }
+                            trySendBlocking(payload)
+                            close()
                         } catch (e: JsonSyntaxException) {
                             AppLog.e(MEDIA, e)
                             val error = MediaError(MediaErrorType.PARSE_ERROR)
@@ -234,7 +216,7 @@ abstract class BaseWPV2MediaRestClient constructor(
             params["offset"] = offset.toString()
         }
         if (mimeType != null) {
-            params["mime_type"] = mimeType.value
+            params["media_type"] = mimeType.value
         }
         val response = executeGetGsonRequest(
             site,

@@ -934,9 +934,7 @@ public class MediaStore extends Store {
             MediaUtils.stripLocation(payload.media.getFilePath());
         }
 
-        if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.uploadMedia(payload.site, payload.media);
-        } else if (payload.site.isJetpackCPConnected()) {
+        if (payload.site.getOrigin() == SiteModel.ORIGIN_WPCOM_REST) {
             mWPComV2MediaRestClient.uploadMedia(payload.site, payload.media);
         } else if (payload.site.getOrigin() == SiteModel.ORIGIN_WPAPI
                    && mApplicationPasswordsConfiguration.isEnabled()) {
@@ -958,9 +956,7 @@ public class MediaStore extends Store {
                 offset = MediaSqlUtils.getMediaWithStates(payload.site, list).size();
             }
         }
-        if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
-        } else if (payload.site.isJetpackCPConnected()) {
+        if (payload.site.getOrigin() == SiteModel.ORIGIN_WPCOM_REST) {
             mWPComV2MediaRestClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
         } else if (payload.site.getOrigin() == SiteModel.ORIGIN_WPAPI
                    && mApplicationPasswordsConfiguration.isEnabled()) {
@@ -977,9 +973,7 @@ public class MediaStore extends Store {
             return;
         }
 
-        if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.fetchMedia(payload.site, payload.media);
-        } else if (payload.site.isJetpackCPConnected()) {
+        if (payload.site.getOrigin() == SiteModel.ORIGIN_WPCOM_REST) {
             mWPComV2MediaRestClient.fetchMedia(payload.site, payload.media);
         } else {
             mMediaXmlrpcClient.fetchMedia(payload.site, payload.media);
@@ -1008,9 +1002,7 @@ public class MediaStore extends Store {
             MediaSqlUtils.insertOrUpdateMedia(media);
         }
 
-        if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.cancelUpload(media);
-        } else if (payload.site.isJetpackCPConnected()) {
+        if (payload.site.getOrigin() == SiteModel.ORIGIN_WPCOM_REST) {
             mWPComV2MediaRestClient.cancelUpload(media);
         } else if (payload.site.getOrigin() == SiteModel.ORIGIN_WPAPI
                    && mApplicationPasswordsConfiguration.isEnabled()) {
