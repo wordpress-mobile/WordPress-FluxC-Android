@@ -90,7 +90,8 @@ public class Authenticator {
         }
     }
 
-    @Inject public Authenticator(Context appContext,
+    @Inject
+    public Authenticator(Context appContext,
                          Dispatcher dispatcher,
                          @Named("regular") RequestQueue requestQueue,
                          AppSecrets secrets) {
@@ -248,7 +249,8 @@ public class Authenticator {
         }
     }
 
-    public interface OauthResponse {}
+    public interface OauthResponse {
+    }
 
     public static class Token implements OauthResponse {
         private String mAccessToken;
@@ -300,8 +302,7 @@ public class Authenticator {
     }
 
     public void sendAuthEmail(final AuthEmailPayload payload) {
-        String url = payload.isSignup ? WPCOMREST.auth.send_signup_email.getUrlV1_1()
-                : WPCOMREST.auth.send_login_email.getUrlV1_3();
+        String url = WPCOMREST.auth.send_login_email.getUrlV1_3();
 
         Map<String, Object> params = new HashMap<>();
         params.put("email", payload.emailOrUsername);
@@ -326,6 +327,10 @@ public class Authenticator {
             params.put("signup_flow_name", payload.signupFlowName);
         }
 
+        if (payload.isSignup) {
+            params.put("create_account", true);
+        }
+
         WPComGsonRequest request = WPComGsonRequest.buildPostRequest(url, params, AuthEmailWPComRestResponse.class,
                 new Response.Listener<AuthEmailWPComRestResponse>() {
                     @Override
@@ -345,7 +350,7 @@ public class Authenticator {
                         mDispatcher.dispatch(AuthenticationActionBuilder.newSentAuthEmailAction(responsePayload));
                     }
                 }
-        );
+                                                                    );
         request.addQueryParameter("locale", LanguageUtils.getPatchedCurrentDeviceLanguage(mAppContext));
 
         mRequestQueue.add(request);
