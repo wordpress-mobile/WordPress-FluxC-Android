@@ -1850,6 +1850,9 @@ class ProductRestClient @Inject constructor(
         if (storedWCProductModel.sku != updatedProductModel.sku) {
             body["sku"] = updatedProductModel.sku
         }
+        if (storedWCProductModel.globalUniqueId != updatedProductModel.globalUniqueId) {
+            body["global_unique_id"] = updatedProductModel.globalUniqueId
+        }
         if (storedWCProductModel.status != updatedProductModel.status) {
             body["status"] = updatedProductModel.status
         }

@@ -34,6 +34,7 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var description = ""
     @Column var permalink = ""
     @Column var sku = ""
+    @Column var globalUniqueId = ""
     @Column var status = ""
 
     @Column var price = ""

@@ -25,6 +25,7 @@ data class ProductApiResponse(
     val description: String? = null,
     val short_description: String? = null,
     val sku: String? = null,
+    val globalUniqueId: String? = null,
     val price: String? = null,
     val regular_price: String? = null,
     val sale_price: String? = null,

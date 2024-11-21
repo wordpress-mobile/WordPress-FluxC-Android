@@ -38,6 +38,9 @@ object ProductVariationMapper {
         if (storedVariationModel.sku != updatedVariationModel.sku) {
             body["sku"] = updatedVariationModel.sku
         }
+        if (storedVariationModel.globalUniqueId != storedVariationModel.globalUniqueId) {
+            body["global_unique_id"] = updatedVariationModel.globalUniqueId
+        }
         if (storedVariationModel.status != updatedVariationModel.status) {
             body["status"] = updatedVariationModel.status
         }

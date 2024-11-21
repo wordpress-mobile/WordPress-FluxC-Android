@@ -40,6 +40,7 @@ class ProductDtoMapper @Inject constructor(
             description = dto.description ?: ""
             shortDescription = dto.short_description ?: ""
             sku = dto.sku ?: ""
+            globalUniqueId = dto.globalUniqueId ?: ""
 
             price = dto.price ?: ""
             regularPrice = dto.regular_price ?: ""
