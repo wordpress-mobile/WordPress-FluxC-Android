@@ -2115,8 +2115,8 @@ open class WellSqlConfig : DefaultWellConfig {
                 }
 
                 205 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
-                    db.execSQL("ALTER TABLE WCProductModel ADD GLOBAL_UNIQUE_ID STRING")
-                    db.execSQL("ALTER TABLE WCProductVariationModel ADD GLOBAL_UNIQUE_ID STRING")
+                    db.execSQL("ALTER TABLE WCProductModel ADD GLOBAL_UNIQUE_ID TEXT")
+                    db.execSQL("ALTER TABLE WCProductVariationModel ADD GLOBAL_UNIQUE_ID TEXT")
                 }
             }
         }
