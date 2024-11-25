@@ -286,9 +286,22 @@ class WCCustomerMapperTest {
         val result = mapper.mapToModel(site, customerDTO)
 
         // then
-        with(result) {
-            assertEquals("firstname", firstName)
-        }
+        assertEquals("firstname", result.firstName)
+    }
+
+    @Test
+    fun `given customer name as null, then first name returns empty string`() {
+        // given
+        val siteId = 23
+        val site = SiteModel().apply { id = siteId }
+
+        val customerDTO = CustomerFromAnalyticsDTO(name = null)
+
+        // when
+        val result = mapper.mapToModel(site, customerDTO)
+
+        // then
+        assertEquals("", result.firstName)
     }
 
     @Test
