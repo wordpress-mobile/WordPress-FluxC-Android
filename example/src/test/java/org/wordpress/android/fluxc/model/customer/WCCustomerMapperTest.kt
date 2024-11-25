@@ -280,7 +280,7 @@ class WCCustomerMapperTest {
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
-        val customerDTO = CustomerFromAnalyticsDTO(name = "firstname with a very long last name")
+        val customerDTO = CustomerFromAnalyticsDTO(name = "firstname lastname")
 
         // when
         val result = mapper.mapToModel(site, customerDTO)
@@ -288,6 +288,23 @@ class WCCustomerMapperTest {
         // then
         with(result) {
             assertEquals("firstname", firstName)
+        }
+    }
+
+    @Test
+    fun `given customer name, then last name is properly assigned`() {
+        // given
+        val siteId = 23
+        val site = SiteModel().apply { id = siteId }
+
+        val customerDTO = CustomerFromAnalyticsDTO(name = "firstname lastname")
+
+        // when
+        val result = mapper.mapToModel(site, customerDTO)
+
+        // then
+        with(result) {
+            assertEquals("lastname", lastName)
         }
     }
 }
