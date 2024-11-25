@@ -273,4 +273,22 @@ class WCCustomerMapperTest {
         // THEN
         assertThat(result.isPayingCustomer).isEqualTo(false)
     }
+
+    @Test
+    @Suppress("LongMethod")
+    fun `given customer name, then first name is properly assigned`() {
+        // given
+        val siteId = 23
+        val site = SiteModel().apply { id = siteId }
+
+        val customerDTO = CustomerFromAnalyticsDTO(name = "firstname with a very long last name")
+
+        // when
+        val result = mapper.mapToModel(site, customerDTO)
+
+        // then
+        with(result) {
+            assertEquals("firstname", firstName)
+        }
+    }
 }
