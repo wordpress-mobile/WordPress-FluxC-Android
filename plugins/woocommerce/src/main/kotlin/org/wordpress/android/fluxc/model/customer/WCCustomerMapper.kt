@@ -117,6 +117,7 @@ class WCCustomerMapper @Inject constructor() {
         }
     }
 
-    private fun String?.firstNameFromName() = this?.split(" ")?.firstOrNull() ?: ""
-    private fun String?.lastNameFromName() = this?.split(" ")?.lastOrNull() ?: ""
+    private fun String?.firstNameFromName() = this?.substringBefore(" ") ?: ""
+
+    private fun String?.lastNameFromName() = this?.substringAfter(" ", "") ?: ""
 }
