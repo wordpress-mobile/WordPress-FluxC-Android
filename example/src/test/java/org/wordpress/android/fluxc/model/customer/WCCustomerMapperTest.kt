@@ -348,4 +348,19 @@ class WCCustomerMapperTest {
         // then
         assertEquals("", result.lastName)
     }
+
+    @Test
+    fun `given customer name has no space, then last name returns empty string`() {
+        // given
+        val siteId = 23
+        val site = SiteModel().apply { id = siteId }
+
+        val customerDTO = CustomerFromAnalyticsDTO(name = "firstnamelastname")
+
+        // when
+        val result = mapper.mapToModel(site, customerDTO)
+
+        // then
+        assertEquals("", result.lastName)
+    }
 }
