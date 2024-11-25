@@ -275,7 +275,6 @@ class WCCustomerMapperTest {
     }
 
     @Test
-    @Suppress("LongMethod")
     fun `given customer name, then first name is properly assigned`() {
         // given
         val siteId = 23
