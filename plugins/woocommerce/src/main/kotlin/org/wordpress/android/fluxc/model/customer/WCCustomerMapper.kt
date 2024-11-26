@@ -122,8 +122,6 @@ class WCCustomerMapper @Inject constructor() {
         this?.trim()?.replace("\\s+".toRegex(), " ")?.substringBefore(" ") ?: ""
 
     private fun String?.lastNameFromName(): String =
-        this?.trim()?.replace("\\s+".toRegex(), " ")?.substringAfter(
-            " ", ""
-        ) ?: ""
+        this?.trim()?.replace("\\s+".toRegex(), " ")?.substringAfter(" ", "") ?: ""
 
 }
