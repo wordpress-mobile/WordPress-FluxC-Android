@@ -438,4 +438,19 @@ class WCCustomerMapperTest {
         // then
         assertEquals("firstname", result.firstName)
     }
+
+    @Test
+    fun `given customer name has multiple in between space, then last name returns proper string`() {
+        // given
+        val siteId = 23
+        val site = SiteModel().apply { id = siteId }
+
+        val customerDTO = CustomerFromAnalyticsDTO(name = "  firstname   and  a   very  long last name")
+
+        // when
+        val result = mapper.mapToModel(site, customerDTO)
+
+        // then
+        assertEquals("and a very long last name", result.lastName)
+    }
 }
