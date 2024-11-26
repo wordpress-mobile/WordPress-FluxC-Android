@@ -276,181 +276,181 @@ class WCCustomerMapperTest {
 
     @Test
     fun `given customer name, then first name is properly assigned`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "firstname lastname")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("firstname", result.firstName)
     }
 
     @Test
     fun `given customer name as null, then first name returns empty string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = null)
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("", result.firstName)
     }
 
     @Test
     fun `given customer name with no space, then first name returns full string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "firstnamelastname")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("firstnamelastname", result.firstName)
     }
 
     @Test
     fun `given customer name, then last name is properly assigned`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "firstname lastname")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("lastname", result.lastName)
     }
 
     @Test
     fun `given customer name as null, then last name returns empty string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = null)
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("", result.lastName)
     }
 
     @Test
     fun `given customer name has no space, then last name returns empty string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "firstnamelastname")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("", result.lastName)
     }
 
     @Test
     fun `given customer name has multiple spaces, then first name returns proper string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "firstname and a very long last name")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("firstname", result.firstName)
     }
 
     @Test
     fun `given customer name has multiple spaces, then last name returns proper string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "firstname and a very long last name")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("and a very long last name", result.lastName)
     }
 
     @Test
     fun `given customer name has leading space, then first name returns proper string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "  firstname and a very long last name")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("firstname", result.firstName)
     }
 
     @Test
     fun `given customer name has trailing space, then last name returns proper string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "firstname and a very long last name  ")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("and a very long last name", result.lastName)
     }
 
     @Test
     fun `given customer name has multiple in between space, then first name returns proper string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "  firstname   and  a   very  long last name")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("firstname", result.firstName)
     }
 
     @Test
     fun `given customer name has multiple in between space, then last name returns proper string`() {
-        // given
+        // GIVEN
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
         val customerDTO = CustomerFromAnalyticsDTO(name = "  firstname   and  a   very  long last name")
 
-        // when
+        // WHEN
         val result = mapper.mapToModel(site, customerDTO)
 
-        // then
+        // THEN
         assertEquals("and a very long last name", result.lastName)
     }
 }
