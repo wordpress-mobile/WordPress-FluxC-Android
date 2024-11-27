@@ -12,6 +12,7 @@ class ProductVariationApiResponse : Response {
     var description: String? = null
     var permalink: String? = null
     var sku: String? = null
+    var global_unique_id: String? = null
     var status: String? = null
     var price: String? = null
     var regular_price: String? = null
@@ -75,6 +76,7 @@ class ProductVariationApiResponse : Response {
             status = response.status ?: ""
             description = response.description ?: ""
             sku = response.sku ?: ""
+            globalUniqueId = response.global_unique_id ?: ""
 
             price = response.price ?: ""
             regularPrice = response.regular_price ?: ""

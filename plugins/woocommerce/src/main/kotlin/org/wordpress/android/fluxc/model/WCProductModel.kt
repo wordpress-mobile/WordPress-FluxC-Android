@@ -44,6 +44,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var description = ""
     @Column var shortDescription = ""
     @Column var sku = ""
+    @Column var globalUniqueId = ""
 
     @Column var price = ""
     @Column var regularPrice = ""
