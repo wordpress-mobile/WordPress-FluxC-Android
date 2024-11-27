@@ -119,8 +119,8 @@ class WCCustomerMapper @Inject constructor() {
 
     // Please refer WCCustomerMapperTest file which serves as documentation of how this function behaves.
     private fun String?.firstNameFromName(): String =
-        this?.trim()?.replace("\\s+".toRegex(), " ")?.substringBefore(" ") ?: ""
+        this?.trim()?.substringBefore(' ')?.trim().orEmpty()
 
     private fun String?.lastNameFromName(): String =
-        this?.trim()?.replace("\\s+".toRegex(), " ")?.substringAfter(" ", "") ?: ""
+        this?.trim()?.substringAfter(' ', "")?.trim().orEmpty()
 }

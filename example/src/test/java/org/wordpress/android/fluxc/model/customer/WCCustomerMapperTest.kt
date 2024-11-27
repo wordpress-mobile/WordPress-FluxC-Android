@@ -451,6 +451,6 @@ class WCCustomerMapperTest {
         val result = mapper.mapToModel(site, customerDTO)
 
         // THEN
-        assertEquals("and a very long last name", result.lastName)
+        assertEquals("and  a   very  long last name", result.lastName)
     }
 }
