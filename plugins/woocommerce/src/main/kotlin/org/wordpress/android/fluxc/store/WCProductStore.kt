@@ -1604,8 +1604,7 @@ class WCProductStore @Inject constructor(
                     if (forceRefresh &&
                         offset == 0 &&
                         includedProductIds.isEmpty() &&
-                        excludedProductIds.isEmpty() &&
-                        filterOptions.isEmpty()
+                        excludedProductIds.isEmpty()
                     ) {
                         productStorageHelper.deleteProductsForSite(site)
                     }
