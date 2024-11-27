@@ -117,6 +117,10 @@ class WCCustomerMapper @Inject constructor() {
         }
     }
 
-    private fun String?.firstNameFromName() = this?.split(" ")?.firstOrNull() ?: ""
-    private fun String?.lastNameFromName() = this?.split(" ")?.lastOrNull() ?: ""
+    // Please refer WCCustomerMapperTest file which serves as documentation of how this function behaves.
+    private fun String?.firstNameFromName(): String =
+        this?.trim()?.substringBefore(' ')?.trim().orEmpty()
+
+    private fun String?.lastNameFromName(): String =
+        this?.trim()?.substringAfter(' ', "")?.trim().orEmpty()
 }
