@@ -592,6 +592,19 @@ class WCOrderStoreTest {
         }
     }
 
+    @Test
+    fun testSendOrderReceipt() {
+        runBlocking {
+            val orderModel = OrderTestUtils.generateSampleOrder(42)
+            val site = SiteModel().apply { id = orderModel.localSiteId.value }
+            val orderId = 42L
+
+            orderStore.sendOrderReceipt(site, orderId)
+
+            verify(orderRestClient).sendOrderReceipt(site, orderId)
+        }
+    }
+
     private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, OrderEntity?> {
         return mutableMapOf<WCOrderSummaryModel, OrderEntity?>().apply {
             (21L..30L).forEach { index ->
