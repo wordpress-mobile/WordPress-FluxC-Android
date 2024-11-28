@@ -568,6 +568,15 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         )
     }
 
+    @Test
+    fun testSendOrderReceipt() = runBlocking {
+        interceptor.respondWith("wc-order-action-send-order-details-success.json")
+
+        val result = orderRestClient.sendOrderReceipt(siteModel, 0)
+
+        assertFalse(result.isError)
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
