@@ -125,6 +125,16 @@ class WCProductStore @Inject constructor(
         var filterOptions: Map<ProductFilterOption, String>? = null,
     ) : Payload<BaseNetworkError>()
 
+    class SearchProductsByGlobalUniqueIdPayload(
+        var site: SiteModel,
+        var globalUniqueId: String,
+        var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
+        var offset: Int = 0,
+        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        var excludedProductIds: List<Long>? = null,
+        var filterOptions: Map<ProductFilterOption, String>? = null,
+    ) : Payload<BaseNetworkError>()
+
     class FetchProductVariationsPayload(
         var site: SiteModel,
         var remoteProductId: Long,
@@ -905,6 +915,9 @@ class WCProductStore @Inject constructor(
             WCProductAction.SEARCH_PRODUCTS ->
                 searchProducts(action.payload as SearchProductsPayload)
 
+            WCProductAction.SEARCH_PRODUCTS_BY_GLOBAL_UNIQUE_ID ->
+                searchProductsByGlobalUniqueId(action.payload as SearchProductsByGlobalUniqueIdPayload)
+
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
                 updateProductImages(action.payload as UpdateProductImagesPayload)
 
@@ -1202,6 +1215,20 @@ class WCProductStore @Inject constructor(
                 site = site,
                 searchQuery = searchQuery,
                 skuSearchOptions = skuSearchOptions,
+                pageSize = pageSize,
+                offset = offset,
+                sorting = sorting,
+                excludedProductIds = excludedProductIds,
+                filterOptions = filterOptions
+            )
+        }
+    }
+
+    private fun searchProductsByGlobalUniqueId(payload: SearchProductsByGlobalUniqueIdPayload) {
+        with(payload) {
+            wcProductRestClient.searchProductsByGlobalUniqueId(
+                site = site,
+                globalUniqueIdSearchQuery = globalUniqueId,
                 pageSize = pageSize,
                 offset = offset,
                 sorting = sorting,

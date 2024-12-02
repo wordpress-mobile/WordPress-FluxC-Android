@@ -420,6 +420,7 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
         skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
+        globalUniqueIdSearchQuery: String? = null,
         includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -432,6 +433,7 @@ class ProductRestClient @Inject constructor(
                 offset = offset,
                 searchQuery = searchQuery,
                 skuSearchOptions = skuSearchOptions,
+                globalUniqueIdSearchQuery = globalUniqueIdSearchQuery,
                 includedProductIds = includedProductIds,
                 excludedProductIds = excludedProductIds,
                 filterOptions = filterOptions
@@ -495,6 +497,26 @@ class ProductRestClient @Inject constructor(
                 }
             }
         }
+    }
+
+    fun searchProductsByGlobalUniqueId(
+        site: SiteModel,
+        globalUniqueIdSearchQuery: String? = null,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
+        offset: Int = 0,
+        sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludedProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
+    ) {
+        fetchProducts(
+            site = site,
+            pageSize = pageSize,
+            offset = offset,
+            sortType = sorting,
+            globalUniqueIdSearchQuery = globalUniqueIdSearchQuery,
+            excludedProductIds = excludedProductIds,
+            filterOptions = filterOptions
+        )
     }
 
     fun searchProducts(
@@ -583,6 +605,7 @@ class ProductRestClient @Inject constructor(
         offset: Int,
         searchQuery: String?,
         skuSearchOptions: SkuSearchOptions,
+        globalUniqueIdSearchQuery: String? = null,
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null
@@ -629,6 +652,10 @@ class ProductRestClient @Inject constructor(
                     params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
                 }
             }
+        }
+
+        if (globalUniqueIdSearchQuery.isNullOrEmpty().not()) {
+            params["global_unique_id"] =  globalUniqueIdSearchQuery!!
         }
 
         return params

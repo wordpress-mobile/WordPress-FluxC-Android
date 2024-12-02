@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayl
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsByGlobalUniqueIdPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
@@ -40,6 +41,8 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCTS,
     @Action(payloadType = SearchProductsPayload.class)
     SEARCH_PRODUCTS,
+    @Action(payloadType = SearchProductsByGlobalUniqueIdPayload.class)
+    SEARCH_PRODUCTS_BY_GLOBAL_UNIQUE_ID,
     @Action(payloadType = FetchProductShippingClassListPayload.class)
     FETCH_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchSingleProductShippingClassPayload.class)
