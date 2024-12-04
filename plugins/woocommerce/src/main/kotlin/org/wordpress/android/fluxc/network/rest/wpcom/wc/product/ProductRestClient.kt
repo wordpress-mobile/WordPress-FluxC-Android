@@ -655,7 +655,7 @@ class ProductRestClient @Inject constructor(
         }
 
         if (globalUniqueIdSearchQuery.isNullOrEmpty().not()) {
-            params["global_unique_id"] =  globalUniqueIdSearchQuery!!
+            params["global_unique_id"] = globalUniqueIdSearchQuery!!
         }
 
         return params
