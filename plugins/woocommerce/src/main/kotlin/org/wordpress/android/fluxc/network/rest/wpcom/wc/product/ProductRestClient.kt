@@ -654,11 +654,18 @@ class ProductRestClient @Inject constructor(
             }
         }
 
-        if (globalUniqueIdSearchQuery.isNullOrEmpty().not()) {
-            params["global_unique_id"] = globalUniqueIdSearchQuery!!
-        }
+        addGlobalUniqueIdSearchQuery(params, globalUniqueIdSearchQuery)
 
         return params
+    }
+
+    private fun addGlobalUniqueIdSearchQuery(
+        params: MutableMap<String, String>,
+        globalUniqueIdSearchQuery: String?
+    ) {
+        if (!globalUniqueIdSearchQuery.isNullOrEmpty()) {
+            params["global_unique_id"] = globalUniqueIdSearchQuery
+        }
     }
 
     /**
