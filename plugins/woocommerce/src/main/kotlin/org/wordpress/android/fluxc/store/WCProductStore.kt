@@ -456,6 +456,7 @@ class WCProductStore @Inject constructor(
         var site: SiteModel,
         var searchQuery: String?,
         var skuSearchOptions: SkuSearchOptions,
+        var globalUniqueIdSearchQuery: String?,
         var productsWithMetaData: List<ProductWithMetaData> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
@@ -467,10 +468,12 @@ class WCProductStore @Inject constructor(
             site: SiteModel,
             query: String?,
             skuSearchOptions: SkuSearchOptions,
+            globalUniqueIdSearchQuery: String?,
             filterOptions: Map<ProductFilterOption, String>?
         ) : this(
             site = site,
             searchQuery = query,
+            globalUniqueIdSearchQuery = globalUniqueIdSearchQuery,
             skuSearchOptions = skuSearchOptions,
             filterOptions = filterOptions
         ) {
@@ -700,6 +703,7 @@ class WCProductStore @Inject constructor(
     class OnProductsSearched(
         var searchQuery: String?,
         var isSkuSearch: SkuSearchOptions,
+        var globalUniqueIdSearchQuery: String?,
         var searchResults: List<WCProductModel> = emptyList(),
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>()
@@ -1913,7 +1917,8 @@ class WCProductStore @Inject constructor(
             emitChange(
                 OnProductsSearched(
                     searchQuery = payload.searchQuery,
-                    isSkuSearch = payload.skuSearchOptions
+                    isSkuSearch = payload.skuSearchOptions,
+                    globalUniqueIdSearchQuery = payload.globalUniqueIdSearchQuery
                 )
             )
         } else {
@@ -1923,6 +1928,7 @@ class WCProductStore @Inject constructor(
                     OnProductsSearched(
                         searchQuery = payload.searchQuery,
                         isSkuSearch = payload.skuSearchOptions,
+                        globalUniqueIdSearchQuery = payload.globalUniqueIdSearchQuery,
                         searchResults = payload.productsWithMetaData.map { it.product },
                         canLoadMore = payload.canLoadMore
                     )

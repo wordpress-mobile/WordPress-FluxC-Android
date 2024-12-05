@@ -469,6 +469,7 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteSearchProductsPayload(
                             site = site,
                             searchQuery = searchQuery,
+                            globalUniqueIdSearchQuery = globalUniqueIdSearchQuery,
                             skuSearchOptions = skuSearchOptions,
                             productsWithMetaData = productModels,
                             offset = offset,
@@ -490,6 +491,7 @@ class ProductRestClient @Inject constructor(
                             site = site,
                             query = searchQuery,
                             skuSearchOptions = skuSearchOptions,
+                            globalUniqueIdSearchQuery = globalUniqueIdSearchQuery,
                             filterOptions = filterOptions
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
