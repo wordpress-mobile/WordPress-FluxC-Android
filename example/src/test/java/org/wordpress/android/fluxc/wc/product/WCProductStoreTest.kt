@@ -849,4 +849,11 @@ class WCProductStoreTest {
             WCProductStore.IncludeType.fromValue("external")
         ).isEqualTo(WCProductStore.IncludeType.External)
     }
+
+    @Test
+    fun `given include_type grouped, then return type Grouped` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("grouped")
+        ).isEqualTo(WCProductStore.IncludeType.Grouped)
+    }
 }
