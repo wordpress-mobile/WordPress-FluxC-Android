@@ -162,6 +162,33 @@ class ProductRestClientTest {
         }
     }
 
+    @Test
+    fun `when fetch products called with the global unique id, then correct params is used for network call`() {
+        runBlockingTest {
+            val globalUniqueIdSearchQuery = "test global unique id"
+            sut.fetchProducts(
+                site = site,
+                globalUniqueIdSearchQuery = globalUniqueIdSearchQuery
+            )
+            val argumentCaptor = argumentCaptor<MutableMap<String, String>>()
+            verify(wooNetwork).executeGetGsonRequest(
+                any(),
+                any(),
+                clazz = eq(Array<ProductApiResponse>::class.java),
+                params = argumentCaptor.capture(),
+                enableCaching = any(),
+                cacheTimeToLive = any(),
+                forced = any(),
+                requestTimeout = any(),
+                retries = any()
+            )
+
+            assertThat(argumentCaptor.firstValue.getOrDefault("global_unique_id", null)).isEqualTo(
+                globalUniqueIdSearchQuery
+            )
+        }
+    }
+
     private fun WCProductModel.withRegularPrice(newRegularPrice: String): WCProductModel =
         copy().apply {
             remoteProductId = this@withRegularPrice.remoteProductId
