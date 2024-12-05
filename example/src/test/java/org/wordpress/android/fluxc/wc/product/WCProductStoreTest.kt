@@ -856,4 +856,11 @@ class WCProductStoreTest {
             WCProductStore.IncludeType.fromValue("grouped")
         ).isEqualTo(WCProductStore.IncludeType.Grouped)
     }
+
+    @Test
+    fun `given include_type empty, then return type null` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("")
+        ).isNull()
+    }
 }
