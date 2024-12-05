@@ -863,4 +863,11 @@ class WCProductStoreTest {
             WCProductStore.IncludeType.fromValue("")
         ).isNull()
     }
+
+    @Test
+    fun `given include_type invalid, then return type null` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("invalid")
+        ).isNull()
+    }
 }
