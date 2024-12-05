@@ -81,6 +81,23 @@ class WCProductStore @Inject constructor(
         const val VARIATIONS_CREATION_LIMIT = 100
     }
 
+    sealed class IncludeType(val value: String) {
+        data object Simple : IncludeType("simple")
+        data object Variable : IncludeType("variable")
+        data object External : IncludeType("external")
+        data object Grouped : IncludeType("grouped")
+
+        companion object {
+            fun fromValue(value: String): IncludeType? = when (value) {
+                "simple" -> Simple
+                "variable" -> Variable
+                "external" -> External
+                "grouped" -> Grouped
+                else -> null
+            }
+        }
+    }
+
     /**
      * Defines the filter options currently supported in the app
      */
@@ -1586,6 +1603,7 @@ class WCProductStore @Inject constructor(
         includedProductIds: List<Long> = emptyList(),
         excludedProductIds: List<Long> = emptyList(),
         filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        includeTypes: List<IncludeType> = emptyList(),
         forceRefresh: Boolean = true
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProducts") {
@@ -1596,7 +1614,8 @@ class WCProductStore @Inject constructor(
                 sortType = sortType,
                 includedProductIds = includedProductIds,
                 excludedProductIds = excludedProductIds,
-                filterOptions = filterOptions
+                filterOptions = filterOptions,
+                includeTypes = includeTypes,
             )
             when {
                 response.isError -> WooResult(response.error)

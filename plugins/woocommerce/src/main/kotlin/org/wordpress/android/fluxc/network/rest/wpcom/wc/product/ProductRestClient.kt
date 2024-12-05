@@ -534,7 +534,8 @@ class ProductRestClient @Inject constructor(
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
         skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
-        filterOptions: Map<ProductFilterOption, String>? = null
+        filterOptions: Map<ProductFilterOption, String>? = null,
+        includeTypes: List<WCProductStore.IncludeType> = emptyList()
     ): WooPayload<List<ProductWithMetaData>> {
         val params = buildProductParametersMap(
             pageSize = pageSize,
@@ -544,7 +545,8 @@ class ProductRestClient @Inject constructor(
             skuSearchOptions = skuSearchOptions,
             includedProductIds = includedProductIds,
             excludedProductIds = excludedProductIds,
-            filterOptions = filterOptions
+            filterOptions = filterOptions,
+            includeTypes = includeTypes,
         )
 
         val url = WOOCOMMERCE.products.pathV3
@@ -585,7 +587,8 @@ class ProductRestClient @Inject constructor(
         skuSearchOptions: SkuSearchOptions,
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
-        filterOptions: Map<ProductFilterOption, String>? = null
+        filterOptions: Map<ProductFilterOption, String>? = null,
+        includeTypes: List<WCProductStore.IncludeType> = emptyList()
     ): MutableMap<String, String> {
         fun ProductSorting.asOrderByParameter() = when (this) {
             TITLE_ASC, TITLE_DESC -> "title"
@@ -601,7 +604,8 @@ class ProductRestClient @Inject constructor(
             "per_page" to pageSize.toString(),
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
-            "offset" to offset.toString()
+            "offset" to offset.toString(),
+            "include_types" to includeTypes.joinToString(",") { it.value }
         )
 
         includedProductIds?.let { includedIds ->
