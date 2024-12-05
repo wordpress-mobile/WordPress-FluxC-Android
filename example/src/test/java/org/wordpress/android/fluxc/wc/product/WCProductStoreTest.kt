@@ -27,12 +27,12 @@ import org.wordpress.android.fluxc.model.AccountModel
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -829,5 +829,10 @@ class WCProductStoreTest {
         assertThat(storedProduct).isNotNull
         assertThat(storedProduct?.product).isEqualTo(product)
         assertThat(storedProduct?.metaData).isEqualTo(metadata)
+    }
+
+    @Test
+    fun `given include_type simple, then return type Simple` () {
+        assertThat(WCProductStore.IncludeType.fromValue("simple")).isEqualTo(WCProductStore.IncludeType.Simple)
     }
 }
