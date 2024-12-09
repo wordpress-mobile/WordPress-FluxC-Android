@@ -830,4 +830,44 @@ class WCProductStoreTest {
         assertThat(storedProduct?.product).isEqualTo(product)
         assertThat(storedProduct?.metaData).isEqualTo(metadata)
     }
+
+    @Test
+    fun `given include_type simple, then return type Simple` () {
+        assertThat(WCProductStore.IncludeType.fromValue("simple")).isEqualTo(WCProductStore.IncludeType.Simple)
+    }
+
+    @Test
+    fun `given include_type variable, then return type Variable` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("variable")
+        ).isEqualTo(WCProductStore.IncludeType.Variable)
+    }
+
+    @Test
+    fun `given include_type external, then return type External` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("external")
+        ).isEqualTo(WCProductStore.IncludeType.External)
+    }
+
+    @Test
+    fun `given include_type grouped, then return type Grouped` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("grouped")
+        ).isEqualTo(WCProductStore.IncludeType.Grouped)
+    }
+
+    @Test
+    fun `given include_type empty, then return type null` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("")
+        ).isNull()
+    }
+
+    @Test
+    fun `given include_type invalid, then return type null` () {
+        assertThat(
+            WCProductStore.IncludeType.fromValue("invalid")
+        ).isNull()
+    }
 }
