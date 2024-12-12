@@ -150,7 +150,7 @@
       "id": "525",
       "error": {
         "code": "woocommerce_rest_shop_order_invalid_id",
-        "message": "Id tidak valid.",
+        "message": "Invalid ID.",
         "data": {
           "status": 400
         }
