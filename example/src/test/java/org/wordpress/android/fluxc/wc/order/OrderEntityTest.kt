@@ -149,9 +149,6 @@ class OrderEntityTest {
     @Test
     fun testDeserializeBatchOrderResponse() {
         val testGson = GsonBuilder()
-            .registerTypeAdapter(
-                BatchOrderApiResponse.OrderResponse::class.java,
-                BatchOrderApiResponse.OrderResponseDeserializer())
             .create()
 
         val batchOrderJson = UnitTestUtils.getStringFromResourceFile(

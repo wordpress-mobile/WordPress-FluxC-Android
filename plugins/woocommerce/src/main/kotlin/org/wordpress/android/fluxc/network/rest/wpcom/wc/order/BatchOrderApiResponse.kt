@@ -3,12 +3,14 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import com.google.gson.annotations.JsonAdapter
 import java.lang.reflect.Type
 import org.wordpress.android.fluxc.network.Response
 
 data class BatchOrderApiResponse(
     val update: List<OrderResponse>
 ) : Response {
+    @JsonAdapter(OrderResponseDeserializer::class)
     sealed class OrderResponse {
         data class Success(
             val order: OrderDto
@@ -30,7 +32,7 @@ data class BatchOrderApiResponse(
         val status: Int
     )
 
-    class OrderResponseDeserializer : JsonDeserializer<OrderResponse> {
+    private class OrderResponseDeserializer : JsonDeserializer<OrderResponse> {
         override fun deserialize(
             json: JsonElement,
             typeOfT: Type,
