@@ -35,7 +35,10 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.BatchOrderApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus.COMPLETED
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
@@ -46,6 +49,7 @@ import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.InsertOrder
 import org.wordpress.android.fluxc.store.WCOrderFetcher
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.BulkUpdateOrderStatusResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
@@ -602,6 +606,101 @@ class WCOrderStoreTest {
             orderStore.sendOrderReceipt(site, orderId)
 
             verify(orderRestClient).sendOrderReceipt(site, orderId)
+        }
+    }
+
+    @Test
+    fun `given successful response for all orders when batch updating status then returns successful orders`() {
+        runBlocking {
+            // Given
+            val site = SiteModel().apply { id = 1 }
+            val orderIds = listOf(1L, 2L, 3L)
+            val newStatus = COMPLETED.value
+
+            // Create mocked OrderDto objects for success responses
+            val order1 = mock<OrderDto>().apply {
+                whenever(id).thenReturn(1L)
+                whenever(status).thenReturn(COMPLETED.value)
+            }
+            val order2 = mock<OrderDto>().apply {
+                whenever(id).thenReturn(2L)
+                whenever(status).thenReturn(COMPLETED.value)
+            }
+            val order3 = mock<OrderDto>().apply {
+                whenever(id).thenReturn(3L)
+                whenever(status).thenReturn(COMPLETED.value)
+            }
+
+            val successResponses = listOf(
+                BatchOrderApiResponse.OrderResponse.Success(order1),
+                BatchOrderApiResponse.OrderResponse.Success(order2),
+                BatchOrderApiResponse.OrderResponse.Success(order3)
+            )
+
+            whenever(orderRestClient.batchUpdateOrdersStatus(site, orderIds, newStatus))
+                .thenReturn(BulkUpdateOrderStatusResponsePayload(successResponses))
+
+            // When
+            val result = orderStore.batchUpdateOrdersStatus(site, orderIds, newStatus)
+
+            // Then
+            assertThat(result.isError).isFalse()
+            result.model?.let { updateResult ->
+                assertEquals(orderIds, updateResult.updatedOrders)
+                assertTrue(updateResult.failedOrders.isEmpty())
+            }
+        }
+    }
+
+    @Test
+    fun `given mixed success and failure response when batch updating status then returns successful and failed orders`() {
+        runBlocking {
+            // Given
+            val site = SiteModel().apply { id = 1 }
+            val orderIds = listOf(1L, 2L, 3L)
+            val newStatus = COMPLETED.value
+
+            // Mock successful orders
+            val order1 = mock<OrderDto>().apply {
+                whenever(id).thenReturn(1L)
+                whenever(status).thenReturn(COMPLETED.value)
+            }
+            val order3 = mock<OrderDto>().apply {
+                whenever(id).thenReturn(3L)
+                whenever(status).thenReturn(COMPLETED.value)
+            }
+
+            val mixedResponses = listOf(
+                BatchOrderApiResponse.OrderResponse.Success(order1),
+                BatchOrderApiResponse.OrderResponse.Error(
+                    id = 2L,
+                    error = BatchOrderApiResponse.ErrorResponse(
+                        code = "woocommerce_rest_shop_order_invalid_id",
+                        message = "Invalid ID.",
+                        data = BatchOrderApiResponse.ErrorData(status = 400)
+                    )
+                ),
+                BatchOrderApiResponse.OrderResponse.Success(order3)
+            )
+
+            whenever(orderRestClient.batchUpdateOrdersStatus(site, orderIds, newStatus))
+                .thenReturn(BulkUpdateOrderStatusResponsePayload(mixedResponses))
+
+            // When
+            val result = orderStore.batchUpdateOrdersStatus(site, orderIds, newStatus)
+
+            // Then
+            assertThat(result.isError).isFalse()
+            result.model?.let { updateResult ->
+                assertEquals(listOf(1L, 3L), updateResult.updatedOrders)
+                assertEquals(1, updateResult.failedOrders.size)
+                with(updateResult.failedOrders[0]) {
+                    assertEquals(2L, id)
+                    assertEquals("woocommerce_rest_shop_order_invalid_id", errorCode)
+                    assertEquals("Invalid ID.", errorMessage)
+                    assertEquals(400, errorStatus)
+                }
+            }
         }
     }
 
