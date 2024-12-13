@@ -1261,7 +1261,7 @@ class OrderRestClient @Inject constructor(
             "tracking_provider"
         ).joinToString(separator = ",")
 
-        private val BATCH_UPDATE_LIMIT = 100
+        private const val BATCH_UPDATE_LIMIT = 100
     }
 
     enum class SortOrder(val value: String) {

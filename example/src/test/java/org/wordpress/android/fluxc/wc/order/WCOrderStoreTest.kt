@@ -653,7 +653,7 @@ class WCOrderStoreTest {
     }
 
     @Test
-    fun `given mixed success and failure response when batch updating status then returns successful and failed orders`() {
+    fun `given mixed response when batch updating status then returns successful and failed orders`() {
         runBlocking {
             // Given
             val site = SiteModel().apply { id = 1 }

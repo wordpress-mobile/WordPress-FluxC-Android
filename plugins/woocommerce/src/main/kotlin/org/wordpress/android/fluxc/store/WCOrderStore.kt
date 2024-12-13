@@ -27,7 +27,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.BatchOrderApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.BatchOrderApiResponse.ErrorResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.OrderBy
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.SortOrder
@@ -1171,6 +1170,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    @Suppress("NestedBlockDepth")
     suspend fun batchUpdateOrdersStatus(
         site: SiteModel,
         orderIds: List<Long>,
