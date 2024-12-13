@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.BatchOrderApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.BatchOrderApiResponse.ErrorResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.OrderBy
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.SortOrder
@@ -44,6 +45,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.TIMEOUT_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrdersStatusResult.FailedOrder
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T.API
@@ -304,6 +306,18 @@ class WCOrderStore @Inject constructor(
         constructor(error: OrderError) : this(emptyList()) {
             this.error = error
         }
+    }
+
+    data class UpdateOrdersStatusResult(
+        val updatedOrders: List<Long> = emptyList(),
+        val failedOrders: List<FailedOrder> = emptyList()
+    ) {
+        data class FailedOrder(
+            val id: Long,
+            val errorCode: String,
+            val errorMessage: String,
+            val errorStatus: Int
+        )
     }
 
     data class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
@@ -1154,6 +1168,43 @@ class WCOrderStore @Inject constructor(
             @Suppress("SpreadOperator")
             insertOrder(listDescriptor.site.localId(), *result.toTypedArray())
             WooResult(orders)
+        }
+    }
+
+    suspend fun batchUpdateOrdersStatus(
+        site: SiteModel,
+        orderIds: List<Long>,
+        newStatus: String
+    ): WooResult<UpdateOrdersStatusResult> {
+        val result = wcOrderRestClient.batchUpdateOrdersStatus(site, orderIds, newStatus)
+
+        return if (!result.isError) {
+            val orders = result.response
+            val updatedOrders = mutableListOf<Long>()
+            val failedOrders = mutableListOf<FailedOrder>()
+
+            orders.forEach { response ->
+                when (response) {
+                    is BatchOrderApiResponse.OrderResponse.Success -> {
+                        response.order.id?.let { updatedOrders.add(it) }
+                    }
+
+                    is BatchOrderApiResponse.OrderResponse.Error -> {
+                        failedOrders.add(
+                            FailedOrder(
+                                id = response.id,
+                                errorCode = response.error.code,
+                                errorMessage = response.error.message,
+                                errorStatus = response.error.data.status
+                            )
+                        )
+                    }
+                }
+            }
+
+            WooResult(UpdateOrdersStatusResult(updatedOrders, failedOrders))
+        } else {
+            WooResult(WooError(API_ERROR, SERVER_ERROR, result.error.message))
         }
     }
 }
