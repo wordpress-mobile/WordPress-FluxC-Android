@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_E
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.BatchOrderApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.OrderBy
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.SortOrder
@@ -297,6 +298,14 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    class BulkUpdateOrderStatusPayload(
+        val response: List<BatchOrderApiResponse.OrderResponse>
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError) : this(emptyList()) {
+            this.error = error
+        }
+    }
+
     data class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
@@ -308,7 +317,8 @@ class WCOrderStore @Inject constructor(
         GENERIC_ERROR,
         PARSE_ERROR,
         TIMEOUT_ERROR,
-        EMPTY_BILLING_EMAIL;
+        EMPTY_BILLING_EMAIL,
+        BULK_UPDATE_LIMIT_EXCEEDED;
 
         companion object {
             private val reverseMap = values().associateBy(OrderErrorType::name)

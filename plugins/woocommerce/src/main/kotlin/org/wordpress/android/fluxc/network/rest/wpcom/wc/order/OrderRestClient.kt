@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.BulkUpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
@@ -1073,6 +1074,52 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun batchUpdateOrdersStatus(
+        site: SiteModel,
+        orderIds: List<Long>,
+        newStatus: String
+    ): BulkUpdateOrderStatusPayload {
+        // Check batch update limit
+        if (orderIds.size > BATCH_UPDATE_LIMIT) {
+            return BulkUpdateOrderStatusPayload(
+                error = OrderError(
+                    type = OrderErrorType.BULK_UPDATE_LIMIT_EXCEEDED,
+                    message = "Cannot update more than 100 orders at once"
+                )
+            )
+        }
+
+        val url = WOOCOMMERCE.orders.batch.pathV3
+        val updateRequests = orderIds.map { orderId ->
+            mapOf(
+                "id" to orderId,
+                "status" to newStatus
+            )
+        }
+
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = BatchOrderApiResponse::class.java,
+            body = mapOf("update" to updateRequests)
+        )
+
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                response.data?.let {
+                    BulkUpdateOrderStatusPayload(it.update)
+                } ?: BulkUpdateOrderStatusPayload(
+                    OrderError(GENERIC_ERROR, "Success response with empty data")
+                )
+            }
+
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
+                BulkUpdateOrderStatusPayload(orderError)
+            }
+        }
+    }
+
     private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
             customerId?.let { put("customer_id", it) }
@@ -1202,6 +1249,8 @@ class OrderRestClient @Inject constructor(
             "tracking_number",
             "tracking_provider"
         ).joinToString(separator = ",")
+
+        private val BATCH_UPDATE_LIMIT = 100
     }
 
     enum class SortOrder(val value: String) {
