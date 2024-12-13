@@ -1,12 +1,10 @@
 package org.wordpress.android.fluxc.wc.order
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import org.junit.Test
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.order.ShippingLine
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.BatchOrderApiResponse
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
