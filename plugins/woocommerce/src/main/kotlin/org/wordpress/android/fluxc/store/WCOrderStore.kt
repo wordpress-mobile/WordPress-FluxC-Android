@@ -298,7 +298,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    class BulkUpdateOrderStatusPayload(
+    class BulkUpdateOrderStatusResponsePayload(
         val response: List<BatchOrderApiResponse.OrderResponse>
     ) : Payload<OrderError>() {
         constructor(error: OrderError) : this(emptyList()) {
