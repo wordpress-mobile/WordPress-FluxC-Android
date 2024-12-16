@@ -641,7 +641,11 @@ class WCOrderStoreTest {
                 .thenReturn(BulkUpdateOrderStatusResponsePayload(successResponses))
 
             // When
-            val result = orderStore.batchUpdateOrdersStatus(site, orderIds, newStatus)
+            val result = orderStore.batchUpdateOrdersStatus(
+                site,
+                orderIds,
+                WCOrderStatusModel(COMPLETED.value)
+            )
 
             // Then
             assertThat(result.isError).isFalse()
@@ -687,7 +691,11 @@ class WCOrderStoreTest {
                 .thenReturn(BulkUpdateOrderStatusResponsePayload(mixedResponses))
 
             // When
-            val result = orderStore.batchUpdateOrdersStatus(site, orderIds, newStatus)
+            val result = orderStore.batchUpdateOrdersStatus(
+                site,
+                orderIds,
+                WCOrderStatusModel(COMPLETED.value)
+            )
 
             // Then
             assertThat(result.isError).isFalse()

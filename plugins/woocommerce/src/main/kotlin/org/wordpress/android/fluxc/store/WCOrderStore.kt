@@ -1174,9 +1174,9 @@ class WCOrderStore @Inject constructor(
     suspend fun batchUpdateOrdersStatus(
         site: SiteModel,
         orderIds: List<Long>,
-        newStatus: String
+        newStatus: WCOrderStatusModel
     ): WooResult<UpdateOrdersStatusResult> {
-        val result = wcOrderRestClient.batchUpdateOrdersStatus(site, orderIds, newStatus)
+        val result = wcOrderRestClient.batchUpdateOrdersStatus(site, orderIds, newStatus.statusKey)
 
         return if (!result.isError) {
             val orders = result.response
