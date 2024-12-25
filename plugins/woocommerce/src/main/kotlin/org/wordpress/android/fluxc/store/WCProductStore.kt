@@ -102,9 +102,15 @@ class WCProductStore @Inject constructor(
      * Defines the filter options currently supported in the app
      */
     enum class ProductFilterOption {
-        STOCK_STATUS, STATUS, TYPE, CATEGORY;
+        STOCK_STATUS, STATUS, TYPE, CATEGORY, DOWNLOADABLE;
 
-        override fun toString() = name.toLowerCase(Locale.US)
+        override fun toString() = name.lowercase(Locale.US)
+    }
+
+    enum class DownloadableOptions {
+        TRUE, FALSE;
+
+        override fun toString() = name.lowercase(Locale.US)
     }
 
     enum class SkuSearchOptions {
