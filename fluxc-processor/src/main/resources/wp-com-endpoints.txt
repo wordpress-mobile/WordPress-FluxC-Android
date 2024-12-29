@@ -32,6 +32,8 @@
 
 /me/account/close
 
+/me/notifications/settings/
+
 /notifications/
 /notifications/$note_id
 /notifications/seen/
