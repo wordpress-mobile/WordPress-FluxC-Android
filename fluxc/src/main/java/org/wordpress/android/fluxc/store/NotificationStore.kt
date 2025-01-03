@@ -14,12 +14,18 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.notification.NoteIdSet
 import org.wordpress.android.fluxc.model.notification.NotificationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient.DevicesDto
+import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient.SiteNotificationSettingDto
 import org.wordpress.android.fluxc.persistence.NotificationSqlUtils
+import org.wordpress.android.fluxc.store.NotificationStore.NotificationSettingErrorType.UnregisteredDevice
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.PreferenceUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import org.wordpress.android.util.AppLog.T.NOTIFS
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -55,11 +61,15 @@ class NotificationStore @Inject constructor(
     class RegisterDeviceResponsePayload(
         val deviceId: String? = null
     ) : Payload<DeviceRegistrationError>() {
-        constructor(error: DeviceRegistrationError, deviceId: String? = null) : this(deviceId) { this.error = error }
+        constructor(error: DeviceRegistrationError, deviceId: String? = null) : this(deviceId) {
+            this.error = error
+        }
     }
 
     class UnregisterDeviceResponsePayload() : Payload<DeviceUnregistrationError>() {
-        constructor(error: DeviceUnregistrationError) : this() { this.error = error }
+        constructor(error: DeviceUnregistrationError) : this() {
+            this.error = error
+        }
     }
 
     class DeviceRegistrationError(
@@ -92,7 +102,9 @@ class NotificationStore @Inject constructor(
         val notifs: List<NotificationModel> = emptyList(),
         val lastSeen: Date? = null
     ) : Payload<NotificationError>() {
-        constructor(error: NotificationError) : this() { this.error = error }
+        constructor(error: NotificationError) : this() {
+            this.error = error
+        }
     }
 
     class FetchNotificationPayload(
@@ -103,14 +115,18 @@ class NotificationStore @Inject constructor(
         val notification: NotificationModel? = null
     ) : Payload<NotificationError>() {
         @Suppress("unused")
-        constructor(error: NotificationError) : this() { this.error = error }
+        constructor(error: NotificationError) : this() {
+            this.error = error
+        }
     }
 
     class FetchNotificationHashesResponsePayload(
         val hashesMap: Map<Long, Long> = emptyMap()
     ) : Payload<NotificationError>() {
         @Suppress("unused")
-        constructor(error: NotificationError) : this() { this.error = error }
+        constructor(error: NotificationError) : this() {
+            this.error = error
+        }
     }
 
     class MarkNotificationsSeenPayload(
@@ -122,7 +138,9 @@ class NotificationStore @Inject constructor(
         val lastSeenTime: Long? = null
     ) : Payload<NotificationError>() {
         @Suppress("unused")
-        constructor(error: NotificationError) : this() { this.error = error }
+        constructor(error: NotificationError) : this() {
+            this.error = error
+        }
     }
 
     class MarkNotificationsReadPayload(
@@ -134,10 +152,13 @@ class NotificationStore @Inject constructor(
         val success: Boolean = false
     ) : Payload<NotificationError>() {
         @Suppress("unused")
-        constructor(error: NotificationError) : this() { this.error = error }
+        constructor(error: NotificationError) : this() {
+            this.error = error
+        }
     }
 
-    class NotificationError(val type: NotificationErrorType, val message: String = "") : OnChangedError
+    class NotificationError(val type: NotificationErrorType, val message: String = "") :
+        OnChangedError
 
     enum class NotificationErrorType {
         BAD_REQUEST,
@@ -178,14 +199,19 @@ class NotificationStore @Inject constructor(
             // remote responses
             NotificationAction.REGISTERED_DEVICE ->
                 handleRegisteredDevice(action.payload as RegisterDeviceResponsePayload)
+
             NotificationAction.UNREGISTERED_DEVICE ->
                 handleUnregisteredDevice(action.payload as UnregisterDeviceResponsePayload)
+
             NotificationAction.FETCHED_NOTIFICATIONS ->
                 handleFetchNotificationsCompleted(action.payload as FetchNotificationsResponsePayload)
+
             NotificationAction.FETCHED_NOTIFICATION_HASHES ->
                 handleFetchNotificationHashesCompleted(action.payload as FetchNotificationHashesResponsePayload)
+
             NotificationAction.FETCHED_NOTIFICATION ->
                 handleFetchNotificationCompleted(action.payload as FetchNotificationResponsePayload)
+
             NotificationAction.MARKED_NOTIFICATIONS_SEEN ->
                 handleMarkedNotificationSeen(action.payload as MarkNotificationSeenResponsePayload)
             // local actions
@@ -211,7 +237,7 @@ class NotificationStore @Inject constructor(
         filterByType: List<String>? = null,
         filterBySubtype: List<String>? = null
     ): List<NotificationModel> =
-            notificationSqlUtils.getNotifications(ORDER_DESCENDING, filterByType, filterBySubtype)
+        notificationSqlUtils.getNotifications(ORDER_DESCENDING, filterByType, filterBySubtype)
 
     /**
      * Fetch all notifications for the given site.
@@ -229,14 +255,24 @@ class NotificationStore @Inject constructor(
         filterByType: List<String>? = null,
         filterBySubtype: List<String>? = null
     ): List<NotificationModel> =
-            notificationSqlUtils.getNotificationsForSite(site, ORDER_DESCENDING, filterByType, filterBySubtype)
+        notificationSqlUtils.getNotificationsForSite(
+            site,
+            ORDER_DESCENDING,
+            filterByType,
+            filterBySubtype
+        )
 
     fun observeNotificationsForSite(
         site: SiteModel,
         filterByType: List<String>? = null,
         filterBySubtype: List<String>? = null
     ): Flow<List<NotificationModel>> =
-            notificationSqlUtils.observeNotificationsForSite(site, ORDER_DESCENDING, filterByType, filterBySubtype)
+        notificationSqlUtils.observeNotificationsForSite(
+            site,
+            ORDER_DESCENDING,
+            filterByType,
+            filterBySubtype
+        )
 
     /**
      * Returns true if the given site has unread notifications
@@ -250,7 +286,7 @@ class NotificationStore @Inject constructor(
         filterByType: List<String>? = null,
         filterBySubtype: List<String>? = null
     ): Boolean =
-            notificationSqlUtils.hasUnreadNotificationsForSite(site, filterByType, filterBySubtype)
+        notificationSqlUtils.hasUnreadNotificationsForSite(site, filterByType, filterBySubtype)
 
     /**
      * Fetch the first notification matching the parameters specified in [NoteIdSet].
@@ -258,40 +294,52 @@ class NotificationStore @Inject constructor(
      * @param idSet A [NoteIdSet] containing the localSiteId, remoteNoteId, and localNoteId
      */
     @Suppress("unused")
-    fun getNotificationByIdSet(idSet: NoteIdSet) = notificationSqlUtils.getNotificationByIdSet(idSet)
+    fun getNotificationByIdSet(idSet: NoteIdSet) =
+        notificationSqlUtils.getNotificationByIdSet(idSet)
 
     /**
      * Fetch a notification from the database by the remote notification ID.
      */
     @Suppress("unused")
     fun getNotificationByRemoteId(remoteNoteId: Long) =
-            notificationSqlUtils.getNotificationByRemoteId(remoteNoteId)
+        notificationSqlUtils.getNotificationByRemoteId(remoteNoteId)
 
     /**
      * Fetch a notification from the database by it's local notification id.
      */
     fun getNotificationByLocalId(noteId: Int) =
-            notificationSqlUtils.getNotificationByIdSet(NoteIdSet(noteId, 0, 0))
+        notificationSqlUtils.getNotificationByIdSet(NoteIdSet(noteId, 0, 0))
 
-    suspend fun registerDevice(token: String, appKey: NotificationAppKey): RegisterDeviceResponsePayload {
+    suspend fun registerDevice(
+        token: String,
+        appKey: NotificationAppKey
+    ): RegisterDeviceResponsePayload {
         return coroutineEngine.withDefaultContext(T.API, this, "registerDevice") {
             val uuid = preferences.getString(WPCOM_PUSH_DEVICE_UUID, null) ?: generateAndStoreUUID()
 
             notificationRestClient.registerDevice(
-                    fcmToken = token,
-                    appKey = appKey,
-                    uuid = uuid
+                fcmToken = token,
+                appKey = appKey,
+                uuid = uuid
             ).apply {
                 if (isError || deviceId.isNullOrEmpty()) {
                     when (error.type) {
                         DeviceRegistrationErrorType.MISSING_DEVICE_ID ->
-                            AppLog.e(T.NOTIFS, "Server response missing device_id - registration skipped!")
+                            AppLog.e(
+                                T.NOTIFS,
+                                "Server response missing device_id - registration skipped!"
+                            )
+
                         DeviceRegistrationErrorType.GENERIC_ERROR ->
-                            AppLog.e(T.NOTIFS, "Error trying to register device: ${error.type} - ${error.message}")
+                            AppLog.e(
+                                T.NOTIFS,
+                                "Error trying to register device: ${error.type} - ${error.message}"
+                            )
+
                         DeviceRegistrationErrorType.INVALID_RESPONSE ->
                             AppLog.e(
-                                    T.NOTIFS,
-                                    "Server response missing response object: ${error.type} - ${error.message}"
+                                T.NOTIFS,
+                                "Server response missing response object: ${error.type} - ${error.message}"
                             )
                     }
                 } else {
@@ -325,11 +373,22 @@ class NotificationStore @Inject constructor(
             if (isError || deviceId.isNullOrEmpty()) {
                 when (error.type) {
                     DeviceRegistrationErrorType.MISSING_DEVICE_ID ->
-                        AppLog.e(T.NOTIFS, "Server response missing device_id - registration skipped!")
+                        AppLog.e(
+                            T.NOTIFS,
+                            "Server response missing device_id - registration skipped!"
+                        )
+
                     DeviceRegistrationErrorType.GENERIC_ERROR ->
-                        AppLog.e(T.NOTIFS, "Error trying to register device: ${error.type} - ${error.message}")
+                        AppLog.e(
+                            T.NOTIFS,
+                            "Error trying to register device: ${error.type} - ${error.message}"
+                        )
+
                     DeviceRegistrationErrorType.INVALID_RESPONSE ->
-                        AppLog.e(T.NOTIFS, "Server response missing response object: ${error.type} - ${error.message}")
+                        AppLog.e(
+                            T.NOTIFS,
+                            "Server response missing response object: ${error.type} - ${error.message}"
+                        )
                 }
                 onDeviceRegistered.error = payload.error
             } else {
@@ -411,7 +470,7 @@ class NotificationStore @Inject constructor(
 
         // Pull cached notifications from the database and build a map of remoteNoteId to noteHash
         val existingNotifsByRemoteIdMap = notificationSqlUtils
-                .getNotifications().associateBy { it.remoteNoteId }.toMap()
+            .getNotifications().associateBy { it.remoteNoteId }.toMap()
 
         // Scrub the newly fetched list against the cached db records. Remove any entries for records that
         // do not require an update from the remote API
@@ -424,7 +483,8 @@ class NotificationStore @Inject constructor(
                     // list of notifs to fetch
                     notifsToFetch.remove(cached.key)
                 }
-            } ?: notificationSqlUtils.deleteNotificationByRemoteId(cached.key) // Delete notification from the db
+            }
+                ?: notificationSqlUtils.deleteNotificationByRemoteId(cached.key) // Delete notification from the db
         }
 
         // Fetch new and updated notifications from the remote api
@@ -437,7 +497,8 @@ class NotificationStore @Inject constructor(
             OnNotificationChanged(0).also { it.error = payload.error }
         } else {
             // Save notifications to the database
-            val rowsAffected = payload.notifs.sumBy { notificationSqlUtils.insertOrUpdateNotification(it) }
+            val rowsAffected =
+                payload.notifs.sumBy { notificationSqlUtils.insertOrUpdateNotification(it) }
 
             OnNotificationChanged(rowsAffected)
         }.apply {
@@ -535,5 +596,61 @@ class NotificationStore @Inject constructor(
             causeOfChange = NotificationAction.UPDATE_NOTIFICATION
         }
         emitChange(onNotificationChanged)
+    }
+
+    suspend fun updateNotificationSettingsFor(
+        siteNotificationsEnabled: List<SiteNotificationSetting>
+    ): Result<Unit> = coroutineEngine.withDefaultContext(
+        T.API,
+        this,
+        "Update notification settings for sites: ${siteNotificationsEnabled.joinToString(",")}}"
+    ) {
+        val deviceId = preferences.getString(WPCOM_PUSH_DEVICE_SERVER_ID, null)
+            ?: return@withDefaultContext Result.failure(
+                NotificationSettingsUpdateError(type = UnregisteredDevice)
+            )
+
+        val payload = siteNotificationsEnabled.map {
+            SiteNotificationSettingDto(
+                siteId = it.siteId,
+                devices = listOf(
+                    DevicesDto(
+                        deviceId = deviceId,
+                        newComment = it.newCommentEnabled,
+                        storeOrder = it.storeOrderEnabled
+                    )
+                )
+            )
+        }
+        when (val result = notificationRestClient.disableNotificationsFor(payload)) {
+            is Success -> {
+                AppLog.i(NOTIFS, "Server response OK. Notifications disabled for device: $deviceId")
+                Result.success(Unit)
+            }
+
+            is Response.Error -> {
+                AppLog.e(NOTIFS, "Error updating notification settings: ${result.error} - ${result.error.message}")
+                Result.failure(
+                    NotificationSettingsUpdateError(
+                        type = NotificationSettingErrorType.ApiError(result.error.message)
+                    )
+                )
+            }
+        }
+    }
+
+    data class SiteNotificationSetting(
+        val siteId: Long,
+        val newCommentEnabled: Boolean,
+        val storeOrderEnabled: Boolean
+    )
+
+    data class NotificationSettingsUpdateError(
+        val type: NotificationSettingErrorType
+    ) : Exception()
+
+    sealed interface NotificationSettingErrorType {
+        object UnregisteredDevice : NotificationSettingErrorType
+        data class ApiError(val message: String) : NotificationSettingErrorType
     }
 }
