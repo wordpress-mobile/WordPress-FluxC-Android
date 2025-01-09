@@ -9,7 +9,7 @@ common_params:
     - "**/build/reports/**/*"
 
 agents:
-  queue: "android"
+  queue: "android-staging"
 
 steps:
   ############################
