@@ -113,6 +113,12 @@ class WCProductStore @Inject constructor(
         override fun toString() = name.lowercase(Locale.US)
     }
 
+    enum class VariationFilterOption {
+        STATUS;
+
+        override fun toString() = name.lowercase(Locale.US)
+    }
+
     enum class SkuSearchOptions {
         Disabled, ExactSearch, PartialMatch
     }
@@ -1754,7 +1760,8 @@ class WCProductStore @Inject constructor(
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE,
         includedVariationIds: List<Long> = emptyList(),
-        excludedVariationIds: List<Long> = emptyList()
+        excludedVariationIds: List<Long> = emptyList(),
+        filterOptions: Map<VariationFilterOption, String>? = null,
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductVariations") {
             val response = wcProductRestClient.fetchProductVariationsWithSyncRequest(
@@ -1763,7 +1770,8 @@ class WCProductStore @Inject constructor(
                 offset = offset,
                 pageSize = pageSize,
                 includedVariationIds = includedVariationIds,
-                excludedVariationIds = excludedVariationIds
+                excludedVariationIds = excludedVariationIds,
+                filterOptions = filterOptions
             )
             when {
                 response.isError -> WooResult(response.error)

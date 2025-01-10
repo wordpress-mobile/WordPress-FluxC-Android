@@ -939,7 +939,8 @@ class ProductRestClient @Inject constructor(
         offset: Int,
         includedVariationIds: List<Long> = emptyList(),
         searchQuery: String? = null,
-        excludedVariationIds: List<Long> = emptyList()
+        excludedVariationIds: List<Long> = emptyList(),
+        filterOptions: Map<WCProductStore.VariationFilterOption, String>? = null,
     ): WooPayload<List<WCProductVariationModel>> {
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
@@ -949,6 +950,10 @@ class ProductRestClient @Inject constructor(
         ).putIfNotEmpty("search" to searchQuery)
             .putIfNotEmpty("include" to includedVariationIds.map { it }.joinToString())
             .putIfNotEmpty("exclude" to excludedVariationIds.map { it }.joinToString())
+
+        filterOptions?.let { options ->
+            params.putAll(options.map { it.key.toString() to it.value })
+        }
 
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
 
