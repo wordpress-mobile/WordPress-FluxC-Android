@@ -116,6 +116,28 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
     }
 
     /**
+     * Makes a PUT call to `/wc/v3/customers/[remoteCustomerId]` to update a customer
+     *
+     * @param [remoteCustomerId] Unique server id of the customer to update
+     */
+    suspend fun updateCustomer(
+        site: SiteModel,
+        remoteCustomerId: Long,
+        customer: CustomerDTO
+    ): WooPayload<CustomerDTO> {
+        val url = WOOCOMMERCE.customers.id(remoteCustomerId).pathV3
+
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            body = customer.toMap(),
+            clazz = CustomerDTO::class.java
+        )
+
+        return response.toWooPayload()
+    }
+
+    /**
      * Makes a GET call to `wc-analytics/reports/customers` to fetch customers
      *
      */
