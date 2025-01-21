@@ -152,6 +152,7 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
         )
 
         return response.toWooPayload()
+    }
 
     /**
      * Makes a GET call to `wc-analytics/reports/customers` to fetch customers
