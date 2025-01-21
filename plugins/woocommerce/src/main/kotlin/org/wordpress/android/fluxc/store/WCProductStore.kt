@@ -114,7 +114,7 @@ class WCProductStore @Inject constructor(
     }
 
     enum class VariationFilterOption {
-        STATUS;
+        STATUS, DOWNLOADABLE;
 
         override fun toString() = name.lowercase(Locale.US)
     }
