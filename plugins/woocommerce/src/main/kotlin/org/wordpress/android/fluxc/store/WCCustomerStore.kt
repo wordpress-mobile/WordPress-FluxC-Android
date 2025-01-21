@@ -208,6 +208,23 @@ class WCCustomerStore @Inject constructor(
     }
 
     /**
+     * delete customer on the backend
+     */
+    suspend fun deleteCustomer(
+        site: SiteModel,
+        customer: WCCustomerModel,
+    ): WooResult<WCCustomerModel> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteCustomer") {
+            val response = restClient.deleteCustomer(site, customer.remoteCustomerId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> WooResult(mapper.mapToModel(site, response.result))
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    /**
      * returns customers from analytics
      */
     suspend fun fetchCustomersFromAnalytics(

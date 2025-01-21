@@ -138,6 +138,22 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
     }
 
     /**
+     * Makes a DELETE call to `/wc/v3/customers/[remoteCustomerId]` to delete a customer
+     *
+     * @param [remoteCustomerId] Unique server id of the customer to delete
+     */
+    suspend fun deleteCustomer(site: SiteModel, remoteCustomerId: Long): WooPayload<CustomerDTO> {
+        val url = WOOCOMMERCE.customers.id(remoteCustomerId).pathV3
+
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = CustomerDTO::class.java
+        )
+
+        return response.toWooPayload()
+
+    /**
      * Makes a GET call to `wc-analytics/reports/customers` to fetch customers
      *
      */
