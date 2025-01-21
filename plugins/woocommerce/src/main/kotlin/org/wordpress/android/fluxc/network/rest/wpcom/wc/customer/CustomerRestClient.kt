@@ -148,6 +148,7 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
         val response = wooNetwork.executeDeleteGsonRequest(
             site = site,
             path = url,
+            params = mapOf("force" to true.toString()),
             clazz = CustomerDTO::class.java
         )
 
