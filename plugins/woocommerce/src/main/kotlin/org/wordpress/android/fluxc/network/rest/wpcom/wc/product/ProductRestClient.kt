@@ -866,13 +866,6 @@ class ProductRestClient @Inject constructor(
      *
      * @param [productId] Unique server id of the product
      *
-     * Variations by default are sorted by `menu_order` with sorting order = desc.
-     * i.e. `orderby` = `menu_order` and `order` = `desc`
-     *
-     * We do not pass `orderby` field in the request here because the API does not support `orderby`
-     * with `menu_order` as value. But we still need to pass `order` field to the API request in order to
-     * preserve the sorting order when fetching multiple pages of variations.
-     *
      */
     suspend fun fetchProductVariations(
         site: SiteModel,
@@ -885,7 +878,7 @@ class ProductRestClient @Inject constructor(
             "per_page" to pageSize.toString(),
             "offset" to offset.toString(),
             "order" to "asc",
-            "orderby" to "date"
+            "orderby" to "menu_order"
         )
 
         val response = wooNetwork.executeGetGsonRequest(
@@ -944,7 +937,7 @@ class ProductRestClient @Inject constructor(
     ): WooPayload<List<WCProductVariationModel>> {
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
-            "orderby" to "date",
+            "orderby" to "menu_order",
             "order" to "asc",
             "offset" to offset.toString()
         ).putIfNotEmpty("search" to searchQuery)
