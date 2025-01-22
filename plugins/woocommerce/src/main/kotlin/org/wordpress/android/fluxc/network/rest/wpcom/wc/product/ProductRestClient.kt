@@ -944,7 +944,7 @@ class ProductRestClient @Inject constructor(
     ): WooPayload<List<WCProductVariationModel>> {
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
-            "orderby" to "date",
+            "orderby" to "menu_order",
             "order" to "asc",
             "offset" to offset.toString()
         ).putIfNotEmpty("search" to searchQuery)
