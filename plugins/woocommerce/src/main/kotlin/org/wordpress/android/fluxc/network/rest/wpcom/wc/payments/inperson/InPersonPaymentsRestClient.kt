@@ -234,12 +234,13 @@ class InPersonPaymentsRestClient @Inject constructor(
         )
     }
 
-    fun VolleyError.getExtraData(): Map<String, Any>? {
+    @Suppress("TooGenericExceptionCaught")
+    private fun VolleyError.getExtraData(): Map<String, Any>? {
         val jsonString = this.networkResponse?.data?.toString(Charsets.UTF_8)
         return try {
             val mapType = object : TypeToken<Map<String, Any>>() {}.type
             return gson.fromJson<Map<String, Any>>(jsonString, mapType)["data"] as Map<String, Any>?
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             AppLog.e(AppLog.T.API, "Error parsing volley error $jsonString", e)
             null
         }
