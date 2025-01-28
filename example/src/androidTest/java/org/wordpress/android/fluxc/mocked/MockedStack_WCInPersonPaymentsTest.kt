@@ -10,8 +10,9 @@ import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.CAPTURE_ERROR
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.MISSING_ORDER
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.CAPTURE_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
@@ -121,6 +122,24 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
         )
 
         assertTrue(result.error?.type == SERVER_ERROR)
+    }
+
+    @Test
+    fun whenAmountTooSmallErrorThenAmountTooSmallErrorReturned() = runBlocking {
+        interceptor.respondWithError("wc-pay-capture-terminal-payment-response-amount-too-small.json", 400)
+
+        val result = restClient.capturePayment(
+            WOOCOMMERCE_PAYMENTS,
+            testSite,
+            DUMMY_PAYMENT_ID,
+            -10L
+        )
+
+        assertTrue(result.error!!.type == CAPTURE_ERROR)
+        assertEquals("amount_too_small", result.error!!.extraData!!["error_type"])
+        val extraDetails = result.error!!.extraData!!["extra_details"] as Map<*, *>
+        assertEquals(50.0, extraDetails["minimum_amount"])
+        assertEquals("USD", extraDetails["minimum_amount_currency"])
     }
 
     @Test

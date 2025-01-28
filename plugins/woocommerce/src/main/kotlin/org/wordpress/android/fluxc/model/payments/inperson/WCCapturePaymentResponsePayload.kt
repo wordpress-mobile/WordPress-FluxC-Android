@@ -23,7 +23,8 @@ class WCCapturePaymentResponsePayload(
 
 class WCCapturePaymentError(
     val type: WCCapturePaymentErrorType = GENERIC_ERROR,
-    val message: String = ""
+    val message: String = "",
+    val extraData: Map<String, Any>? = null
 ) : OnChangedError
 
 enum class WCCapturePaymentErrorType {
