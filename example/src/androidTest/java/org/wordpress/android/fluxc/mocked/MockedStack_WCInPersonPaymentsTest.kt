@@ -11,8 +11,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType
-import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.CAPTURE_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.MISSING_ORDER
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.CAPTURE_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
@@ -135,9 +135,15 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
             -10L
         )
 
-        val type = result.error?.type as WCCapturePaymentErrorType.AMOUNT_TOO_SMALL
-        assertTrue(type.currency == "USD")
-        assertTrue(type.minAllowedAmountInStripeMinorUnit == 50L)
+        assertTrue(result.error!!.type == CAPTURE_ERROR)
+        assertTrue(result.error!!.extraData!!["error_type"] == "amount_too_small")
+        assertTrue(
+            result.error!!.extraData!!["extra_details"] as Map<*, *> ==
+                mapOf(
+                    "minimum_amount" to 50L,
+                    "minimum_amount_currency" to "USD"
+                )
+        )
     }
 
     @Test
