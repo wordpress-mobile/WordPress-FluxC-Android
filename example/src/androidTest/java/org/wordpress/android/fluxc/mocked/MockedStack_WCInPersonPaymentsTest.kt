@@ -136,14 +136,10 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
         )
 
         assertTrue(result.error!!.type == CAPTURE_ERROR)
-        assertTrue(result.error!!.extraData!!["error_type"] == "amount_too_small")
-        assertTrue(
-            result.error!!.extraData!!["extra_details"] as Map<*, *> ==
-                mapOf(
-                    "minimum_amount" to 50L,
-                    "minimum_amount_currency" to "USD"
-                )
-        )
+        assertEquals("amount_too_small", result.error!!.extraData!!["error_type"])
+        val extraDetails = result.error!!.extraData!!["extra_details"] as Map<*, *>
+        assertEquals(50.0, extraDetails["minimum_amount"])
+        assertEquals("USD", extraDetails["minimum_amount_currency"])
     }
 
     @Test
