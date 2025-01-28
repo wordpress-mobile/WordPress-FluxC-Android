@@ -26,11 +26,15 @@ class WCCapturePaymentError(
     val message: String = ""
 ) : OnChangedError
 
-enum class WCCapturePaymentErrorType {
-    GENERIC_ERROR,
-    PAYMENT_ALREADY_CAPTURED,
-    MISSING_ORDER,
-    CAPTURE_ERROR,
-    SERVER_ERROR,
-    NETWORK_ERROR
+sealed class WCCapturePaymentErrorType {
+    data object GENERIC_ERROR : WCCapturePaymentErrorType()
+    data object PAYMENT_ALREADY_CAPTURED : WCCapturePaymentErrorType()
+    data object MISSING_ORDER : WCCapturePaymentErrorType()
+    data object CAPTURE_ERROR : WCCapturePaymentErrorType()
+    data object SERVER_ERROR : WCCapturePaymentErrorType()
+    data object NETWORK_ERROR : WCCapturePaymentErrorType()
+    data class AMOUNT_TOO_SMALL(
+        val minAllowedAmountInStripeMinorUnit: Long,
+        val currency: String
+    ) : WCCapturePaymentErrorType()
 }
