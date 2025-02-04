@@ -1,3 +1,10 @@
+# 🚨 Repository Archived 🚨
+
+> [!WARNING]
+> **This repository has been archived** because its functionality has been merged into its only two former clients: [WordPress/Jetpack](https://github.com/wordpress-mobile/WordPress-Android) and [WooCommerce](https://github.com/woocommerce/woocommerce-android). Future development will continue in those repositories.
+
+---
+
 # WordPress-FluxC-Android
 
 WordPress-FluxC-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site).
