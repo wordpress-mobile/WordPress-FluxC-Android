@@ -1,7 +1,7 @@
 # 🚨 Repository Archived 🚨
 
 > [!WARNING]
-> **This repository has been archived** because its functionality has been merged into the two clients that previously used it: the [WordPress/Jetpack](https://github.com/wordpress-mobile/WordPress-Android) and the [WooCommerce](https://github.com/woocommerce/woocommerce-android). Future development will continue within those repositories.
+> **This repository has been archived** because its functionality has been merged into its only two former clients: [WordPress/Jetpack](https://github.com/wordpress-mobile/WordPress-Android) and [WooCommerce](https://github.com/woocommerce/woocommerce-android). Future development will continue in those repositories.
 
 ---
 
